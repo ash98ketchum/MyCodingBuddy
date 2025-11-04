@@ -5,11 +5,16 @@ import { createServer } from "./server";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  root: ".",
   server: {
     host: "::",
     port: 8080,
     fs: {
-      allow: ["./client", "./shared"],
+      allow: [
+        "./",          // ✅ allow root folder
+        "./client",    // ✅ allow client code
+        "./shared",    // ✅ allow shared types
+      ],
       deny: [".env", ".env.*", "*.{crt,pem}", "**/.git/**", "server/**"],
     },
   },
