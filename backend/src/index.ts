@@ -1,0 +1,87 @@
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
+import rateLimit from 'express-rate-limit';
+import { config } from './config';
+import prisma from './config/database';
+import redis from './config/redis';
+import { errorHandler, notFound } from './middleware/error';
+
+// Routes
+import authRoutes from './routes/auth.routes';
+import problemRoutes from './routes/problem.routes';
+import submissionRoutes from './routes/submission.routes';
+import adminRoutes from './routes/admin.routes';
+
+const app = express();
+
+// Security middleware
+app.use(helmet());
+app.use(cors(config.cors));
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: config.rateLimit.windowMs,
+  max: config.rateLimit.maxRequests,
+  message: 'Too many requests from this IP, please try again later.',
+});
+app.use('/api', limiter);
+
+// Body parsing middleware
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cookieParser());
+
+// Logging
+if (config.isDevelopment) {
+  app.use(morgan('dev'));
+} else {
+  app.use(morgan('combined'));
+}
+
+// Health check
+app.get('/health', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Server is running',
+    timestamp: new Date(),
+  });
+});
+
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/problems', problemRoutes);
+app.use('/api/submissions', submissionRoutes);
+app.use('/api/admin', adminRoutes);
+
+// Error handling
+app.use(notFound);
+app.use(errorHandler);
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM received, shutting down gracefully');
+  await prisma.$disconnect();
+  redis.disconnect();
+  process.exit(0);
+});
+
+const PORT = config.port;
+
+app.listen(PORT, async () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📝 Environment: ${config.nodeEnv}`);
+  console.log(`🔗 API: http://localhost:${PORT}/api`);
+  
+  // Test database connection
+  try {
+    await prisma.$connect();
+    console.log('✅ Database connected');
+  } catch (error) {
+    console.error('❌ Database connection failed:', error);
+  }
+});
+
+export default app;
