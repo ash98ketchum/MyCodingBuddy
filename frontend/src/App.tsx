@@ -15,6 +15,7 @@ import AdminDashboard from './pages/AdminDashboard';
 
 // Layout
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
@@ -29,30 +30,31 @@ const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-gray-50 dark:bg-dark-950">
+      <div className="min-h-screen bg-background flex flex-col">
         <Toaster
           position="top-right"
           toastOptions={{
             duration: 3000,
             style: {
-              background: '#1f2937',
-              color: '#fff',
+              background: '#ffffff',
+              color: '#000000',
+              border: '1px solid #FFB22C',
             },
             success: {
               iconTheme: {
-                primary: '#10b981',
+                primary: '#22C55E',
                 secondary: '#fff',
               },
             },
             error: {
               iconTheme: {
-                primary: '#ef4444',
+                primary: '#EF4444',
                 secondary: '#fff',
               },
             },
           }}
         />
-        
+
         <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<LoginPage />} />
@@ -65,6 +67,7 @@ function App() {
               <PrivateRoute>
                 <Navbar />
                 <HomePage />
+                <Footer />
               </PrivateRoute>
             }
           />
@@ -74,6 +77,7 @@ function App() {
               <PrivateRoute>
                 <Navbar />
                 <ProblemsPage />
+                <Footer />
               </PrivateRoute>
             }
           />
@@ -91,6 +95,7 @@ function App() {
               <PrivateRoute>
                 <Navbar />
                 <LeaderboardPage />
+                <Footer />
               </PrivateRoute>
             }
           />
@@ -100,6 +105,7 @@ function App() {
               <PrivateRoute>
                 <Navbar />
                 <ProfilePage />
+                <Footer />
               </PrivateRoute>
             }
           />
@@ -111,6 +117,7 @@ function App() {
               <AdminRoute>
                 <Navbar />
                 <AdminDashboard />
+                <Footer />
               </AdminRoute>
             }
           />
@@ -121,3 +128,4 @@ function App() {
 }
 
 export default App;
+

@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import CodeEditor from '@/components/CodeEditor';
 import { Problem, Submission } from '@/types';
 import api from '@/services/api';
 import toast from 'react-hot-toast';
 import { Clock, Database, CheckCircle, XCircle, Loader } from 'lucide-react';
+import { Badge } from '../components/ui';
 
 export const ProblemPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -44,7 +45,7 @@ export const ProblemPage: React.FC = () => {
       });
 
       const submissionId = response.data.submissionId;
-      
+
       toast.success('Code submitted! Checking...');
 
       // Poll for result
@@ -73,29 +74,20 @@ export const ProblemPage: React.FC = () => {
     }
   };
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'EASY': return 'text-green-500';
-      case 'MEDIUM': return 'text-yellow-500';
-      case 'HARD': return 'text-red-500';
-      default: return 'text-gray-500';
-    }
-  };
-
   const getVerdictIcon = (verdict: string) => {
     if (verdict === 'ACCEPTED') {
-      return <CheckCircle className="text-green-500" size={20} />;
+      return <CheckCircle className="text-success" size={20} />;
     } else if (verdict === 'PENDING') {
-      return <Loader className="text-blue-500 animate-spin" size={20} />;
+      return <Loader className="text-accent animate-spin" size={20} />;
     } else {
-      return <XCircle className="text-red-500" size={20} />;
+      return <XCircle className="text-error" size={20} />;
     }
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <Loader className="animate-spin text-primary-600" size={48} />
+        <Loader className="animate-spin text-accent" size={48} />
       </div>
     );
   }
@@ -111,18 +103,21 @@ export const ProblemPage: React.FC = () => {
   }
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-screen flex flex-col bg-background">
       {/* Header */}
-      <div className="bg-white dark:bg-dark-900 border-b border-gray-200 dark:border-dark-800 px-6 py-4">
+      <div className="bg-white dark:bg-dark-900 border-b-2 border-gray-200 dark:border-dark-800 px-6 py-4 shadow-sm">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{problem.title}</h1>
-            <div className="flex items-center gap-4 mt-2">
-              <span className={`font-medium ${getDifficultyColor(problem.difficulty)}`}>
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{problem.title}</h1>
+            <div className="flex items-center gap-3">
+              <Badge variant={problem.difficulty.toLowerCase() as any}>
                 {problem.difficulty}
-              </span>
-              <span className="text-sm text-gray-500">
+              </Badge>
+              <span className="text-sm text-text-secondary">
                 Acceptance: {((problem.acceptedCount / problem.submissionCount) * 100 || 0).toFixed(1)}%
+              </span>
+              <span className="text-sm text-text-tertiary">
+                {problem.submissionCount} submissions
               </span>
             </div>
           </div>
@@ -132,27 +127,25 @@ export const ProblemPage: React.FC = () => {
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Panel - Problem Description */}
-        <div className="w-1/2 overflow-y-auto bg-white dark:bg-dark-900 border-r border-gray-200 dark:border-dark-800">
+        <div className="w-1/2 overflow-y-auto bg-white dark:bg-dark-900 border-r-2 border-gray-200 dark:border-dark-800">
           <div className="p-6">
             {/* Tabs */}
-            <div className="flex gap-4 mb-6 border-b border-gray-200 dark:border-dark-800">
+            <div className="flex gap-6 mb-6 border-b-2 border-gray-100 dark:border-dark-800">
               <button
                 onClick={() => setActiveTab('description')}
-                className={`pb-2 px-1 font-medium transition-colors ${
-                  activeTab === 'description'
-                    ? 'text-primary-600 border-b-2 border-primary-600'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
+                className={`pb-3 px-1 font-semibold transition-all ${activeTab === 'description'
+                  ? 'text-accent border-b-3 border-accent'
+                  : 'text-text-secondary hover:text-text-primary'
+                  }`}
               >
                 Description
               </button>
               <button
                 onClick={() => setActiveTab('submissions')}
-                className={`pb-2 px-1 font-medium transition-colors ${
-                  activeTab === 'submissions'
-                    ? 'text-primary-600 border-b-2 border-primary-600'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
+                className={`pb-3 px-1 font-semibold transition-all ${activeTab === 'submissions'
+                  ? 'text-accent border-b-3 border-accent'
+                  : 'text-text-secondary hover:text-text-primary'
+                  }`}
               >
                 Submissions
               </button>
@@ -228,22 +221,33 @@ export const ProblemPage: React.FC = () => {
 
           {/* Result Panel */}
           {result && (
-            <div className="bg-white dark:bg-dark-900 border-t border-gray-200 dark:border-dark-800 p-4">
+            <div className="bg-white dark:bg-dark-900 border-t-2 border-gray-200 dark:border-dark-800 p-6 shadow-lg">
               <div className="flex items-start gap-3">
                 {getVerdictIcon(result.verdict)}
                 <div className="flex-1">
-                  <p className="font-semibold text-gray-900 dark:text-white">
+                  <p className="font-bold text-lg text-gray-900 dark:text-white">
                     {result.verdict.replace(/_/g, ' ')}
                   </p>
                   {result.verdict === 'ACCEPTED' && (
-                    <div className="flex items-center gap-4 mt-2 text-sm text-gray-600 dark:text-gray-400">
-                      <span>Runtime: {result.executionTime}ms</span>
-                      <span>Memory: {result.memoryUsed}KB</span>
-                      <span>Score: {result.score}/100</span>
+                    <div className="flex items-center gap-6 mt-3 text-sm">
+                      <div>
+                        <span className="text-text-tertiary">Runtime: </span>
+                        <span className="font-semibold text-success">{result.executionTime}ms</span>
+                      </div>
+                      <div>
+                        <span className="text-text-tertiary">Memory: </span>
+                        <span className="font-semibold text-accent">{result.memoryUsed}KB</span>
+                      </div>
+                      <div>
+                        <span className="text-text-tertiary">Score: </span>
+                        <span className="font-semibold text-accent">{result.score}/100</span>
+                      </div>
                     </div>
                   )}
                   {result.errorMessage && (
-                    <p className="mt-2 text-sm text-red-600 dark:text-red-400">{result.errorMessage}</p>
+                    <div className="mt-3 p-3 bg-error/10 rounded-lg">
+                      <p className="text-sm text-error font-mono">{result.errorMessage}</p>
+                    </div>
                   )}
                 </div>
               </div>
