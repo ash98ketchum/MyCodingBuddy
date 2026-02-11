@@ -1,3 +1,4 @@
+// frontend/src/pages/ProfilePage.tsx
 import { useAuthStore } from '@/store';
 import { Trophy, TrendingUp, Award, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';

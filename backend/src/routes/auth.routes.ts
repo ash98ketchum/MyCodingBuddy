@@ -1,3 +1,4 @@
+// backend/src/routes/auth.routes.ts
 import { Router } from 'express';
 import { register, login, getProfile, updateProfile } from '@/controllers/auth.controller';
 import { authenticate } from '@/middleware/auth';

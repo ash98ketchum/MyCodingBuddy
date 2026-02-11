@@ -11,6 +11,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:push": "prisma db push",
     "prisma:studio": "prisma studio",
+    "seed:problems": "tsx prisma/seed-problems.ts",
     "worker": "tsx src/worker/index.ts"
   },
   "dependencies": {

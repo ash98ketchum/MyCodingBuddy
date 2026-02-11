@@ -1,3 +1,4 @@
+// frontend/src/App.tsx
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
@@ -85,6 +86,7 @@ function App() {
             path="/problems/:slug"
             element={
               <PrivateRoute>
+                <Navbar />
                 <ProblemPage />
               </PrivateRoute>
             }

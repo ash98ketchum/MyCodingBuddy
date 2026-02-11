@@ -69,18 +69,18 @@ services:
         source: /*
         destination: /index.html
 
+  # Redis Cache
+  - type: redis
+    name: codingbuddy-redis
+    region: oregon
+    plan: starter
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
+
 databases:
   - name: codingbuddy-db
     databaseName: codingbuddy
     user: codingbuddy_user
     region: oregon
     plan: starter
-    ipAllowList: []
-
-services:
-  - type: redis
-    name: codingbuddy-redis
-    region: oregon
-    plan: starter
-    maxmemoryPolicy: allkeys-lru
     ipAllowList: []

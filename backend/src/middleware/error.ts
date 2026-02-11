@@ -1,3 +1,4 @@
+// backend/src/middleware/error.ts
 import { Request, Response, NextFunction } from 'express';
 import { config } from '@/config';
 

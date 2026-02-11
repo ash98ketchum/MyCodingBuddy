@@ -1,6 +1,8 @@
+// frontend/src/pages/ProblemPage.tsx
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import CodeEditor from '@/components/CodeEditor';
+import TestResults from '@/components/TestResults';
 import { Problem, Submission } from '@/types';
 import api from '@/services/api';
 import toast from 'react-hot-toast';
@@ -12,6 +14,7 @@ export const ProblemPage: React.FC = () => {
   const [problem, setProblem] = useState<Problem | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [running, setRunning] = useState(false);
   const [result, setResult] = useState<Submission | null>(null);
   const [activeTab, setActiveTab] = useState<'description' | 'submissions'>('description');
 
@@ -74,13 +77,48 @@ export const ProblemPage: React.FC = () => {
     }
   };
 
-  const getVerdictIcon = (verdict: string) => {
-    if (verdict === 'ACCEPTED') {
-      return <CheckCircle className="text-success" size={20} />;
-    } else if (verdict === 'PENDING') {
-      return <Loader className="text-accent animate-spin" size={20} />;
-    } else {
-      return <XCircle className="text-error" size={20} />;
+  const handleRun = async (code: string, language: string) => {
+    if (!problem) return;
+
+    try {
+      setRunning(true);
+      setResult(null);
+
+      // Submit code with sampleOnly flag
+      const response = await api.submitCode({
+        problemId: problem.id,
+        code,
+        language,
+        sampleOnly: true,
+      });
+
+      const submissionId = response.data.submissionId;
+
+      toast.success('Running sample tests...');
+
+      // Poll for result
+      const pollResult = async () => {
+        const statusResponse = await api.getSubmissionStatus(submissionId);
+        const submission = statusResponse.data;
+
+        if (submission.verdict !== 'PENDING') {
+          setResult(submission);
+          setRunning(false);
+
+          if (submission.verdict === 'ACCEPTED') {
+            toast.success('Sample tests passed! 🎉');
+          } else {
+            toast.error(`${submission.verdict.replace(/_/g, ' ')}`);
+          }
+        } else {
+          setTimeout(pollResult, 1000);
+        }
+      };
+
+      pollResult();
+    } catch (error) {
+      setRunning(false);
+      toast.error('Run failed');
     }
   };
 
@@ -216,41 +254,26 @@ export const ProblemPage: React.FC = () => {
         {/* Right Panel - Code Editor */}
         <div className="w-1/2 flex flex-col">
           <div className="flex-1 p-4">
-            <CodeEditor onSubmit={handleSubmit} isSubmitting={submitting} />
+            <CodeEditor
+              onSubmit={handleSubmit}
+              onRun={handleRun}
+              isSubmitting={submitting}
+              isRunning={running}
+            />
           </div>
 
           {/* Result Panel */}
           {result && (
-            <div className="bg-white dark:bg-dark-900 border-t-2 border-gray-200 dark:border-dark-800 p-6 shadow-lg">
-              <div className="flex items-start gap-3">
-                {getVerdictIcon(result.verdict)}
-                <div className="flex-1">
-                  <p className="font-bold text-lg text-gray-900 dark:text-white">
-                    {result.verdict.replace(/_/g, ' ')}
-                  </p>
-                  {result.verdict === 'ACCEPTED' && (
-                    <div className="flex items-center gap-6 mt-3 text-sm">
-                      <div>
-                        <span className="text-text-tertiary">Runtime: </span>
-                        <span className="font-semibold text-success">{result.executionTime}ms</span>
-                      </div>
-                      <div>
-                        <span className="text-text-tertiary">Memory: </span>
-                        <span className="font-semibold text-accent">{result.memoryUsed}KB</span>
-                      </div>
-                      <div>
-                        <span className="text-text-tertiary">Score: </span>
-                        <span className="font-semibold text-accent">{result.score}/100</span>
-                      </div>
-                    </div>
-                  )}
-                  {result.errorMessage && (
-                    <div className="mt-3 p-3 bg-error/10 rounded-lg">
-                      <p className="text-sm text-error font-mono">{result.errorMessage}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
+            <div className="bg-white dark:bg-dark-900 border-t-2 border-gray-200 dark:border-dark-800 p-6 shadow-lg max-h-96 overflow-y-auto">
+              <TestResults
+                verdict={result.verdict}
+                testCasesPassed={result.testCasesPassed || 0}
+                totalTestCases={result.totalTestCases || problem?.testCases?.length || 0}
+                testResults={result.testResults as any}
+                executionTime={result.executionTime}
+                memoryUsed={result.memoryUsed}
+                errorMessage={result.errorMessage}
+              />
             </div>
           )}
         </div>

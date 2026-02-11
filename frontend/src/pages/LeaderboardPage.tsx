@@ -1,3 +1,4 @@
+// frontend/src/pages/LeaderboardPage.tsx
 import { useEffect, useState } from 'react';
 import { LeaderboardEntry } from '@/types';
 import api from '@/services/api';

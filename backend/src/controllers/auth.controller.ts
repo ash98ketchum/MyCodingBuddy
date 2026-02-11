@@ -1,3 +1,4 @@
+// backend/src/controllers/auth.controller.ts
 import { Request, Response } from 'express';
 import prisma from '@/config/database';
 import { hashPassword, comparePassword } from '@/utils/password';

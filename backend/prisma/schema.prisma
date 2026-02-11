@@ -53,8 +53,8 @@ model User {
   fullName          String?
   role              Role                @default(USER)
   planType          PlanType            @default(FREE)
-  rating            Int                 @default(1200)
-  streak            Int                 @default(0)
+  rating            Int?
+  streak            Int?
   lastSolvedAt      DateTime?
   avatar            String?
   bio               String?
@@ -145,6 +145,7 @@ model Submission {
   testCasesPassed   Int                 @default(0)
   totalTestCases    Int                 @default(0)
   errorMessage      String?
+  testResults       Json?               // Detailed results for each test case
   createdAt         DateTime            @default(now())
   
   @@index([userId, createdAt])

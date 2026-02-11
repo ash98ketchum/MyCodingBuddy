@@ -1,3 +1,4 @@
+// frontend/src/pages/ProblemsPage.tsx
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Problem } from '@/types';

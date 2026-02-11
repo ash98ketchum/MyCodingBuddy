@@ -1,3 +1,4 @@
+// backend/src/controllers/admin.controller.ts
 import { Request, Response } from 'express';
 import prisma from '@/config/database';
 import { hashPassword } from '@/utils/password';

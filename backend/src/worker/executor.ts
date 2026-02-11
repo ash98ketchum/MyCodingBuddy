@@ -1,3 +1,4 @@
+// backend/src/worker/executor.ts
 import { spawn } from 'child_process';
 import * as fs from 'fs/promises';
 import * as path from 'path';

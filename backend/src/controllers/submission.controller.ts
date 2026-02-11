@@ -1,3 +1,4 @@
+// backend/src/controllers/submission.controller.ts
 import { Request, Response } from 'express';
 import prisma from '@/config/database';
 import { AppError } from '@/middleware/error';

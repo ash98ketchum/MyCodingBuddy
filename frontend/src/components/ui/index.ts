@@ -1,3 +1,4 @@
+// frontend/src/components/ui/index.ts
 // UI Components Barrel Export
 export { Button } from './Button';
 export type { ButtonProps } from './Button';

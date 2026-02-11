@@ -1,3 +1,4 @@
+// backend/src/utils/jwt.ts
 import jwt from 'jsonwebtoken';
 import { config } from '@/config';
 

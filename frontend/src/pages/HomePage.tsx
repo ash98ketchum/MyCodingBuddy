@@ -1,3 +1,4 @@
+// frontend/src/pages/HomePage.tsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Code2, Trophy, Users, TrendingUp, Zap, Target, Award, ArrowRight } from 'lucide-react';

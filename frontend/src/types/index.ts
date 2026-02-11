@@ -1,3 +1,4 @@
+// frontend/src/types/index.ts
 export interface User {
   id: string;
   username: string;
@@ -58,6 +59,7 @@ export interface Submission {
   testCasesPassed: number;
   totalTestCases: number;
   errorMessage?: string;
+  testResults?: any;
   createdAt: string;
   problem?: {
     id: string;

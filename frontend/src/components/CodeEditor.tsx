@@ -1,3 +1,4 @@
+// frontend/src/components/CodeEditor.tsx
 import React, { useState } from 'react';
 import Editor from '@monaco-editor/react';
 import { Play, Settings, Copy, Download } from 'lucide-react';
@@ -6,7 +7,9 @@ import toast from 'react-hot-toast';
 
 interface CodeEditorProps {
   onSubmit: (code: string, language: string) => void;
+  onRun?: (code: string, language: string) => void;
   isSubmitting?: boolean;
+  isRunning?: boolean;
 }
 
 const LANGUAGES = [
@@ -26,7 +29,7 @@ const CODE_TEMPLATES: Record<string, string> = {
 // Read input
 const input = require('fs').readFileSync(0, 'utf-8').trim();
 console.log(solution(input));`,
-  
+
   PYTHON: `def solution(input_data):
     # Write your code here
     return input_data
@@ -35,7 +38,7 @@ console.log(solution(input));`,
 import sys
 input_data = sys.stdin.read().strip()
 print(solution(input_data))`,
-  
+
   JAVA: `import java.util.*;
 
 public class Solution {
@@ -50,7 +53,7 @@ public class Solution {
         return input;
     }
 }`,
-  
+
   CPP: `#include <iostream>
 #include <string>
 using namespace std;
@@ -66,7 +69,7 @@ int main() {
     cout << solution(input) << endl;
     return 0;
 }`,
-  
+
   C: `#include <stdio.h>
 #include <string.h>
 
@@ -79,7 +82,7 @@ int main() {
 }`,
 };
 
-export const CodeEditor: React.FC<CodeEditorProps> = ({ onSubmit, isSubmitting }) => {
+export const CodeEditor: React.FC<CodeEditorProps> = ({ onSubmit, onRun, isSubmitting, isRunning }) => {
   const { code, language, theme, fontSize, setCode, setLanguage, setTheme, setFontSize } = useEditorStore();
   const [showSettings, setShowSettings] = useState(false);
 
@@ -150,14 +153,29 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ onSubmit, isSubmitting }
           </div>
         </div>
 
-        <button
-          onClick={() => onSubmit(code, language)}
-          disabled={isSubmitting || !code.trim()}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors font-medium"
-        >
-          <Play size={18} />
-          {isSubmitting ? 'Submitting...' : 'Run Code'}
-        </button>
+        <div className="flex items-center gap-2">
+          {onRun && (
+            <button
+              onClick={() => onRun(code, language)}
+              disabled={isRunning || !code.trim()}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white rounded-lg transition-colors font-medium"
+              title="Run sample test cases"
+            >
+              <Play size={18} />
+              {isRunning ? 'Running...' : 'Run'}
+            </button>
+          )}
+
+          <button
+            onClick={() => onSubmit(code, language)}
+            disabled={isSubmitting || !code.trim()}
+            className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors font-medium"
+            title="Submit and run all test cases"
+          >
+            <Play size={18} />
+            {isSubmitting ? 'Submitting...' : 'Submit'}
+          </button>
+        </div>
       </div>
 
       {/* Settings Panel */}

@@ -1,3 +1,4 @@
+// backend/src/utils/password.ts
 import bcrypt from 'bcryptjs';
 
 const SALT_ROUNDS = 10;

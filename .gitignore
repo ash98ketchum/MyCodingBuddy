@@ -2,7 +2,15 @@
 backend/node_modules
 backend/yarn-error.log
 backend/.env
+backend/Dockerfile
+backend/.dockerignore
+backend/dist
+backend/build
 
 # Frontend
 frontend/node_modules
 frontend/yarn-error.log
+frontend/Dockerfile
+frontend/.dockerignore
+frontend/dist
+frontend/build

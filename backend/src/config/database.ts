@@ -1,3 +1,4 @@
+// backend/src/config/database.ts
 import { PrismaClient } from '@prisma/client';
 import { config } from './index';
 
