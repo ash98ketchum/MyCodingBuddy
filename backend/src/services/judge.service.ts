@@ -14,7 +14,17 @@ interface SubmissionJob {
 }
 
 export const submissionQueue = new Queue<SubmissionJob>('code-submissions', {
-  redis: config.redis.url,
+  redis: {
+    port: config.redis.url.includes('localhost') ? 6379 : undefined, // Fallback for local
+    ...((config.redis.url.startsWith('rediss://') ? {
+      url: config.redis.url,
+      tls: {
+        rejectUnauthorized: false
+      }
+    } : {
+      url: config.redis.url
+    }))
+  },
   defaultJobOptions: {
     attempts: 3,
     backoff: {

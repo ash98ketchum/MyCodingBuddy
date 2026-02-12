@@ -2,10 +2,20 @@
 import Redis from 'ioredis';
 import { config } from './index';
 
-const redis = new Redis(config.redis.url, {
+const redisUrl = config.redis.url;
+const isTls = redisUrl.startsWith('rediss://');
+
+const redisOptions = {
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
-});
+  ...(isTls ? {
+    tls: {
+      rejectUnauthorized: false,
+    },
+  } : {}),
+};
+
+const redis = new Redis(redisUrl, redisOptions);
 
 redis.on('connect', () => {
   console.log('✅ Redis connected successfully');
