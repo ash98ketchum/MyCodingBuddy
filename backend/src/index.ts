@@ -18,6 +18,9 @@ import adminRoutes from './routes/admin.routes';
 
 const app = express();
 
+// Trust Proxy for Render
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(helmet());
 app.use(cors(config.cors));
@@ -75,7 +78,7 @@ app.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📝 Environment: ${config.nodeEnv}`);
   console.log(`🔗 API: http://localhost:${PORT}/api`);
-  
+
   // Test database connection
   try {
     await prisma.$connect();

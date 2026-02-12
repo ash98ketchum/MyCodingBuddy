@@ -6,7 +6,7 @@ services:
     region: oregon
     plan: starter
     buildCommand: cd backend && npm install && npm run prisma:generate && npm run build
-    startCommand: cd backend && npm start
+    startCommand: cd backend && npx prisma migrate deploy && npm start
     envVars:
       - key: NODE_ENV
         value: production
@@ -38,7 +38,7 @@ services:
     region: oregon
     plan: starter
     buildCommand: cd backend && npm install && npm run prisma:generate
-    startCommand: cd backend && npm run worker
+    startCommand: cd backend && npx prisma migrate deploy && npm run worker
     envVars:
       - key: NODE_ENV
         value: production
