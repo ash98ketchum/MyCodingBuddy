@@ -2,7 +2,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyToken, JwtPayload } from '@/utils/jwt';
 
-export interface AuthRequest extends Request, NextFunction, Response {
+export interface AuthRequest extends Request {
   user?: {
     userId: string;
     email: string;
