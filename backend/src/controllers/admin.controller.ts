@@ -136,7 +136,7 @@ export const updateUser = async (req: Request, res: Response) => {
     const { role, planType, isPremium, rating } = req.body;
 
     const user = await prisma.user.update({
-      where: { id },
+      where: { id: id as string },
       data: {
         ...(role && { role }),
         ...(planType && { planType }),
@@ -169,7 +169,7 @@ export const deleteUser = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     await prisma.user.delete({
-      where: { id },
+      where: { id: id as string },
     });
 
     res.json({

@@ -159,7 +159,7 @@ export const getSubmissionStatus = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     const submission = await prisma.submission.findUnique({
-      where: { id },
+      where: { id: id as string },
       select: {
         id: true,
         verdict: true,

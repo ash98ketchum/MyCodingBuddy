@@ -76,7 +76,7 @@ export const getProblem = async (req: Request, res: Response) => {
     const { slug } = req.params;
 
     const problem = await prisma.problem.findUnique({
-      where: { slug },
+      where: { slug: slug as string },
       include: {
         testCases: {
           where: { isSample: true },
@@ -204,7 +204,7 @@ export const deleteProblem = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     await prisma.problem.delete({
-      where: { id },
+      where: { id: id as string },
     });
 
     res.json({

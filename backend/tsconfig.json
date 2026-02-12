@@ -17,8 +17,6 @@
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
 
-    "types": ["node", "express"],
-
     "baseUrl": "./src",
     "paths": {
       "@/*": ["*"]
