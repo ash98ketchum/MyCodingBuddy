@@ -133,15 +133,13 @@ export interface ApiResponse<T = any> {
   errors?: any[];
 }
 
-export interface PaginatedResponse<T> {
-  success: boolean;
-  data: {
-    [key: string]: T[];
-    pagination: {
-      page: number;
-      limit: number;
-      total: number;
-      pages: number;
-    };
-  };
-}
+// export interface PaginatedResponse<T> {
+//   success: boolean;
+//   data: T[];
+//   pagination: {
+//     page: number;
+//     limit: number;
+//     total: number;
+//     pages: number;
+//   };
+// }

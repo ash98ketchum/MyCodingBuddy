@@ -289,20 +289,15 @@ export const createAdminUser = async (req: Request, res: Response) => {
 
 export const getSystemHealth = async (req: Request, res: Response) => {
   try {
-    const [
-      dbConnection,
-      redisConnection,
-      queueStats,
-    ] = await Promise.all([
-      prisma.$queryRaw`SELECT 1`,
-      // Redis check would go here
-      // Get queue stats
-      prisma.submission.count({
-        where: {
-          verdict: 'PENDING',
-        },
-      }),
-    ]);
+    // Test database connection
+    await prisma.$queryRaw`SELECT 1`;
+
+    // Get queue stats
+    const queueStats = await prisma.submission.count({
+      where: {
+        verdict: 'PENDING',
+      },
+    });
 
     res.json({
       success: true,

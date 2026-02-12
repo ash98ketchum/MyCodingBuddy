@@ -1,18 +1,19 @@
 // backend/src/worker/index.ts
 import { submissionQueue } from '@/services/judge.service';
 import prisma from '@/config/database';
+import { Verdict } from '@prisma/client';
 import { executeCode } from './executor';
 
 submissionQueue.process(3, async (job) => {
   const { submissionId, code, language, testCases, timeLimit, memoryLimit } = job.data;
 
-  console.log(`🔄 Processing submission ${submissionId}`);
+  console.log(`🔄 Processing submission ${submissionId} `);
 
   try {
     let passedTests = 0;
     let totalExecutionTime = 0;
     let maxMemoryUsed = 0;
-    let verdict = 'ACCEPTED';
+    let verdict: Verdict = 'ACCEPTED';
     let errorMessage = '';
     const testResults: any[] = [];
 
@@ -68,7 +69,7 @@ submissionQueue.process(3, async (job) => {
           errorMessage = error.message;
         } else {
           verdict = 'RUNTIME_ERROR';
-          errorMessage = `Test case ${i + 1}: ${error.message}`;
+          errorMessage = `Test case ${i + 1}: ${error.message} `;
         }
       }
 
@@ -139,7 +140,7 @@ submissionQueue.process(3, async (job) => {
       }
     }
 
-    console.log(`✅ Submission ${submissionId} completed: ${verdict}`);
+    console.log(`✅ Submission ${submissionId} completed: ${verdict} `);
 
     return {
       submissionId,
@@ -147,7 +148,7 @@ submissionQueue.process(3, async (job) => {
       score,
     };
   } catch (error) {
-    console.error(`❌ Error processing submission ${submissionId}:`, error);
+    console.error(`❌ Error processing submission ${submissionId}: `, error);
 
     // Update submission with error
     await prisma.submission.update({
