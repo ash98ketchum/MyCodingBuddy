@@ -1,32 +1,46 @@
 {
   "compilerOptions": {
+    /* Language and Environment */
     "target": "ES2022",
+    "lib": ["ES2022"],
     "module": "CommonJS",
-    "outDir": "./dist",
+    "moduleResolution": "node",
+
+    /* Project Structure */
     "rootDir": "./src",
+    "outDir": "./dist",
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["*"]
+    },
+
+    /* Strictness */
     "strict": false,
     "noImplicitAny": false,
+
+    /* Interop */
     "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+
+    /* Type Support (🔥 IMPORTANT FIX) */
+    "types": ["node"],
+    "typeRoots": ["./node_modules/@types"],
+
+    /* Output */
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "baseUrl": "./src",
-    "paths": {
-      "@/*": [
-        "*"
-      ]
-    }
+
+    /* Build Optimizations */
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+
+    /* Misc */
+    "removeComments": false,
+    "preserveConstEnums": true
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }
