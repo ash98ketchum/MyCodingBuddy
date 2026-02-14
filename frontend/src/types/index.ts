@@ -149,3 +149,83 @@ export interface ApiResponse<T = any> {
 //     pages: number;
 //   };
 // }
+
+// Discussion Module Types
+export interface Discussion {
+  id: string;
+  title: string;
+  content: string;
+  userId: string;
+  user: {
+    id: string;
+    username: string;
+    avatar?: string;
+    rating?: number;
+  };
+  problemId?: string;
+  problem?: {
+    id: string;
+    title: string;
+    slug: string;
+    difficulty: 'EASY' | 'MEDIUM' | 'HARD';
+  };
+  tags: string;
+  upvotes: number;
+  downvotes: number;
+  viewCount: number;
+  isPinned: boolean;
+  isClosed: boolean;
+  createdAt: string;
+  updatedAt: string;
+  comments?: Comment[];
+  reactions?: Reaction[];
+  votes?: Vote[];
+  _count?: {
+    comments: number;
+    reactions: number;
+  };
+}
+
+export interface Comment {
+  id: string;
+  content: string;
+  userId: string;
+  user: {
+    id: string;
+    username: string;
+    avatar?: string;
+    rating?: number;
+  };
+  discussionId: string;
+  parentId?: string;
+  replies?: Comment[];
+  upvotes: number;
+  downvotes: number;
+  isAccepted: boolean;
+  createdAt: string;
+  updatedAt: string;
+  reactions?: Reaction[];
+  votes?: Vote[];
+}
+
+export interface Reaction {
+  id: string;
+  emoji: string;
+  userId: string;
+  user: {
+    id: string;
+    username: string;
+  };
+  discussionId?: string;
+  commentId?: string;
+  createdAt: string;
+}
+
+export interface Vote {
+  id: string;
+  type: 'UP' | 'DOWN';
+  userId: string;
+  discussionId?: string;
+  commentId?: string;
+  createdAt: string;
+}

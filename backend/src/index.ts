@@ -15,6 +15,7 @@ import authRoutes from './routes/auth.routes';
 import problemRoutes from './routes/problem.routes';
 import submissionRoutes from './routes/submission.routes';
 import adminRoutes from './routes/admin.routes';
+import discussionRoutes from './routes/discussion.routes';
 
 const app = express();
 
@@ -65,6 +66,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/problems', problemRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api', discussionRoutes); // Discussion routes
 
 // Error handling
 app.use(notFound);

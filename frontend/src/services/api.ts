@@ -95,6 +95,74 @@ class ApiService {
     return this.api.get('/problems/global-stats');
   }
 
+  // Discussion Module APIs
+  async getDiscussions(params?: {
+    page?: number;
+    limit?: number;
+    problemId?: string;
+    tags?: string;
+    sort?: 'recent' | 'popular' | 'unanswered';
+  }) {
+    return this.api.get('/discussions', { params });
+  }
+
+  async getDiscussionById(id: string) {
+    return this.api.get(`/discussions/${id}`);
+  }
+
+  async createDiscussion(data: {
+    title: string;
+    content: string;
+    problemId?: string;
+    tags?: string;
+  }) {
+    return this.api.post('/discussions', data);
+  }
+
+  async updateDiscussion(id: string, data: { title: string; content: string; tags?: string }) {
+    return this.api.put(`/discussions/${id}`, data);
+  }
+
+  async deleteDiscussion(id: string) {
+    return this.api.delete(`/discussions/${id}`);
+  }
+
+  async createComment(data: {
+    discussionId: string;
+    content: string;
+    parentId?: string;
+  }) {
+    return this.api.post(`/discussions/${data.discussionId}/comments`, data);
+  }
+
+  async updateComment(id: string, content: string) {
+    return this.api.put(`/comments/${id}`, { content });
+  }
+
+  async deleteComment(id: string) {
+    return this.api.delete(`/comments/${id}`);
+  }
+
+  async markAsAccepted(id: string) {
+    return this.api.post(`/comments/${id}/accept`);
+  }
+
+  async toggleReaction(data: { emoji: string; discussionId?: string; commentId?: string }) {
+    return this.api.post('/reactions', data);
+  }
+
+  async getReactions(params: { discussionId?: string; commentId?: string }) {
+    return this.api.get('/reactions', { params });
+  }
+
+  async vote(data: { type: 'UP' | 'DOWN'; discussionId?: string; commentId?: string }) {
+    return this.api.post('/vote', data);
+  }
+
+  async removeVote(data: { discussionId?: string; commentId?: string }) {
+    return this.api.delete('/vote', { data });
+  }
+
   // Submissions
   async submitCode(data: any) {
     return this.api.post('/submissions', data);

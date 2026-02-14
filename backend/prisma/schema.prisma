@@ -38,6 +38,7 @@ model User {
   contests          ContestParticipant[]
   discussions       Discussion[]
   comments          Comment[]
+  reactions         Reaction[]
   votes             Vote[]
   
   @@index([username])
@@ -172,52 +173,88 @@ model ContestParticipant {
 
 model Discussion {
   id                String              @id @default(cuid())
-  problemId         String
-  problem           Problem             @relation(fields: [problemId], references: [id], onDelete: Cascade)
-  userId            String
-  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   title             String
   content           String
+  userId            String
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problemId         String?
+  problem           Problem?            @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  tags              String              // CSV: "dynamic-programming,graphs"
   upvotes           Int                 @default(0)
   downvotes         Int                 @default(0)
+  viewCount         Int                 @default(0)
   isPinned          Boolean             @default(false)
+  isClosed          Boolean             @default(false)
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
   
   comments          Comment[]
+  reactions         Reaction[]
   votes             Vote[]
   
-  @@index([problemId])
   @@index([userId])
+  @@index([problemId])
+  @@index([createdAt])
 }
+
 
 model Comment {
   id                String              @id @default(cuid())
-  discussionId      String
-  discussion        Discussion          @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  content           String
   userId            String
   user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  content           String
+  discussionId      String
+  discussion        Discussion          @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  parentId          String?
+  parent            Comment?            @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies           Comment[]           @relation("CommentReplies")
   upvotes           Int                 @default(0)
   downvotes         Int                 @default(0)
+  isAccepted        Boolean             @default(false)
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
   
-  @@index([discussionId])
+  reactions         Reaction[]
+  votes             Vote[]
+  
   @@index([userId])
+  @@index([discussionId])
+  @@index([parentId])
 }
+
 
 model Vote {
   id                String              @id @default(cuid())
+  type              String              // "UP" or "DOWN"
   userId            String
   user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  discussionId      String
-  discussion        Discussion          @relation(fields: [discussionId], references: [id], onDelete: Cascade)
-  value             Int                 // 1 for upvote, -1 for downvote
+  discussionId      String?
+  discussion        Discussion?         @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  commentId         String?
+  comment           Comment?            @relation(fields: [commentId], references: [id], onDelete: Cascade)
   createdAt         DateTime            @default(now())
   
   @@unique([userId, discussionId])
+  @@unique([userId, commentId])
   @@index([discussionId])
+  @@index([commentId])
+}
+
+model Reaction {
+  id                String              @id @default(cuid())
+  emoji             String              // Single emoji: "👍", "❤️", "🔥"
+  userId            String
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  discussionId      String?
+  discussion        Discussion?         @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  commentId         String?
+  comment           Comment?            @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  createdAt         DateTime            @default(now())
+  
+  @@unique([emoji, userId, discussionId])
+  @@unique([emoji, userId, commentId])
+  @@index([discussionId])
+  @@index([commentId])
 }
 
 model Payment {
