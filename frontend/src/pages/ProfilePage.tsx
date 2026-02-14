@@ -1,27 +1,70 @@
 // frontend/src/pages/ProfilePage.tsx
+import React from 'react';
 import { useAuthStore } from '@/store';
 import { Trophy, TrendingUp, Award, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Badge, Card } from '../components/ui';
 
 const ProfilePage = () => {
-  const { user } = useAuthStore();
+  const { user, setAuth } = useAuthStore();
+  const [profileData, setProfileData] = React.useState<any>(null);
+  const [recentActivity, setRecentActivity] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
 
-  // Mock data - in real app, fetch from API
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { api } = await import('../services/api');
+
+        // Fetch User Profile with Stats
+        const profileRes: any = await api.getProfile();
+        if (profileRes.success) {
+          setProfileData(profileRes.data);
+          // Update store if needed, but be careful not to overwrite token
+          if (sessionStorage.getItem('token')) {
+            setAuth(profileRes.data, sessionStorage.getItem('token')!);
+          }
+        }
+
+        // Fetch Recent Submissions
+        const submissionsRes: any = await api.getUserSubmissions({ limit: 5 });
+        if (submissionsRes.success) {
+          const activity = submissionsRes.data.submissions.map((sub: any) => ({
+            problem: sub.problem.title,
+            difficulty: sub.problem.difficulty,
+            solvedAt: new Date(sub.createdAt).toLocaleDateString(),
+            status: sub.verdict === 'ACCEPTED' ? 'Accepted' : sub.verdict
+          }));
+          setRecentActivity(activity);
+        }
+      } catch (error) {
+        console.error('Failed to fetch profile data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchData();
+    }
+  }, [user?.id]); // specific dependency
+
+  if (loading && !profileData) { // Show loading only if we don't have data yet
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
+  // Use profileData from API if available, otherwise fallback to store user (which might be stale but has basic info)
+  // The API response `profileData` now includes `solvedStats`
+  const displayUser = profileData || user;
+
   const stats = {
-    totalSolved: 45,
-    easySolved: 20,
-    mediumSolved: 18,
-    hardSolved: 7,
-    streak: 5,
-    ranking: 234,
+    totalSolved: displayUser?.solvedStats?.total || 0,
+    easySolved: displayUser?.solvedStats?.easy || 0,
+    mediumSolved: displayUser?.solvedStats?.medium || 0,
+    hardSolved: displayUser?.solvedStats?.hard || 0,
+    streak: displayUser?.streak || 0,
+    ranking: displayUser?.rating || 0, // Using rating as proxy for ranking for now as per plan
   };
-
-  const recentActivity = [
-    { problem: 'Two Sum', difficulty: 'EASY', solvedAt: '2 hours ago', status: 'Accepted' },
-    { problem: 'Binary Search', difficulty: 'EASY', solvedAt: '5 hours ago', status: 'Accepted' },
-    { problem: 'Merge Intervals', difficulty: 'MEDIUM', solvedAt: '1 day ago', status: 'Accepted' },
-  ];
 
   return (
     <div className="min-h-screen bg-background py-8">
@@ -35,17 +78,17 @@ const ProfilePage = () => {
             <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
               {/* Avatar */}
               <div className="w-24 h-24 rounded-full bg-gradient-to-br from-accent to-secondary flex items-center justify-center text-white font-bold text-4xl shadow-xl">
-                {user?.username?.charAt(0).toUpperCase()}
+                {displayUser?.username?.charAt(0).toUpperCase()}
               </div>
 
               {/* User Info */}
               <div className="flex-1 text-center md:text-left">
-                <h1 className="text-3xl font-bold mb-2">{user?.username}</h1>
-                <p className="text-text-secondary mb-4">{user?.email}</p>
+                <h1 className="text-3xl font-bold mb-2">{displayUser?.username}</h1>
+                <p className="text-text-secondary mb-4">{displayUser?.email}</p>
 
                 <div className="flex flex-wrap gap-2 justify-center md:justify-start">
                   <Badge variant="tag">
-                    {user?.role === 'ADMIN' ? 'Administrator' : 'Member'}
+                    {displayUser?.role === 'ADMIN' ? 'Administrator' : 'Member'}
                   </Badge>
                   <Badge variant="easy">
                     🔥 {stats.streak} Day Streak
@@ -55,7 +98,7 @@ const ProfilePage = () => {
 
               {/* Rating */}
               <div className="text-center">
-                <div className="text-4xl font-bold text-accent mb-1">{user?.rating}</div>
+                <div className="text-4xl font-bold text-accent mb-1">{displayUser?.rating}</div>
                 <div className="text-sm text-text-secondary">Rating</div>
                 <div className="flex items-center gap-1 text-xs text-success mt-1">
                   <TrendingUp size={14} />
@@ -84,7 +127,7 @@ const ProfilePage = () => {
             <div className="text-sm text-text-secondary">Easy</div>
             <div className="mt-2">
               <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div className="h-full bg-success" style={{ width: '80%' }}></div>
+                <div className="h-full bg-success" style={{ width: `${stats.totalSolved ? (stats.easySolved / stats.totalSolved) * 100 : 0}%` }}></div>
               </div>
             </div>
           </Card>
@@ -94,7 +137,7 @@ const ProfilePage = () => {
             <div className="text-sm text-text-secondary">Medium</div>
             <div className="mt-2">
               <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div className="h-full bg-warning" style={{ width: '60%' }}></div>
+                <div className="h-full bg-warning" style={{ width: `${stats.totalSolved ? (stats.mediumSolved / stats.totalSolved) * 100 : 0}%` }}></div>
               </div>
             </div>
           </Card>
@@ -104,7 +147,7 @@ const ProfilePage = () => {
             <div className="text-sm text-text-secondary">Hard</div>
             <div className="mt-2">
               <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div className="h-full bg-error" style={{ width: '35%' }}></div>
+                <div className="h-full bg-error" style={{ width: `${stats.totalSolved ? (stats.hardSolved / stats.totalSolved) * 100 : 0}%` }}></div>
               </div>
             </div>
           </Card>
@@ -123,29 +166,35 @@ const ProfilePage = () => {
 
           <Card variant="default" className="overflow-hidden">
             <div className="divide-y divide-gray-100">
-              {recentActivity.map((activity, index) => (
-                <div
-                  key={index}
-                  className="p-5 hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-center justify-between flex-wrap gap-3">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900 mb-1">{activity.problem}</h3>
-                      <div className="flex items-center gap-2 text-sm">
-                        <Badge variant={activity.difficulty.toLowerCase() as any}>
-                          {activity.difficulty}
-                        </Badge>
-                        <span className="text-text-tertiary">{activity.solvedAt}</span>
+              {recentActivity.length > 0 ? (
+                recentActivity.map((activity, index) => (
+                  <div
+                    key={index}
+                    className="p-5 hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center justify-between flex-wrap gap-3">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 mb-1">{activity.problem}</h3>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Badge variant={activity.difficulty.toLowerCase() as any}>
+                            {activity.difficulty}
+                          </Badge>
+                          <span className="text-text-tertiary">{activity.solvedAt}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-3 py-1 rounded-lg text-sm font-medium ${activity.status === 'Accepted' ? 'bg-success/10 text-success' : 'bg-error/10 text-error'}`}>
+                          {activity.status === 'Accepted' ? '✓' : '✖'} {activity.status}
+                        </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="px-3 py-1 bg-success/10 text-success rounded-lg text-sm font-medium">
-                        ✓ {activity.status}
-                      </span>
-                    </div>
                   </div>
+                ))
+              ) : (
+                <div className="p-8 text-center text-text-secondary">
+                  No recent activity found. Start solving problems!
                 </div>
-              ))}
+              )}
             </div>
           </Card>
         </motion.div>

@@ -238,3 +238,31 @@ export const getProblemStats = async (req: Request, res: Response) => {
     throw error;
   }
 };
+
+export const getGlobalStats = async (req: Request, res: Response) => {
+  try {
+    const [
+      totalProblems,
+      totalUsers,
+      totalSubmissions,
+      totalContests
+    ] = await Promise.all([
+      prisma.problem.count(),
+      prisma.user.count({ where: { role: 'USER' } }), // Only count regular users
+      prisma.submission.count(),
+      prisma.contest.count()
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        totalProblems,
+        totalUsers,
+        totalSubmissions,
+        totalContests
+      }
+    });
+  } catch (error) {
+    throw error;
+  }
+};

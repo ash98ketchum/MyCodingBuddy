@@ -112,33 +112,76 @@ export const login = async (req: Request, res: Response) => {
 
 export const getProfile = async (req: any, res: Response) => {
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: req.user.userId },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        fullName: true,
-        role: true,
-        planType: true,
-        rating: true,
-        streak: true,
-        avatar: true,
-        bio: true,
-        country: true,
-        organization: true,
-        isPremium: true,
-        createdAt: true,
-      },
-    });
+    const [user, solvedStats] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: req.user.userId },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          fullName: true,
+          role: true,
+          planType: true,
+          rating: true,
+          streak: true,
+          avatar: true,
+          bio: true,
+          country: true,
+          organization: true,
+          isPremium: true,
+          createdAt: true,
+        },
+      }),
+      prisma.submission.groupBy({
+        by: ['problemId'],
+        where: {
+          userId: req.user.userId,
+          verdict: 'ACCEPTED',
+        },
+        _count: {
+          problemId: true,
+        },
+      }),
+    ]);
 
     if (!user) {
       throw new AppError('User not found', 404);
     }
 
+    // Get difficulty stats for solved problems
+    const solvedProblemIds = solvedStats.map(s => s.problemId);
+
+    const difficultyStatsRaw = await prisma.problem.groupBy({
+      by: ['difficulty'],
+      where: {
+        id: {
+          in: solvedProblemIds
+        }
+      },
+      _count: {
+        id: true
+      }
+    });
+
+    const difficultyStats = {
+      easy: 0,
+      medium: 0,
+      hard: 0,
+      total: solvedProblemIds.length
+    };
+
+    difficultyStatsRaw.forEach(stat => {
+      if (stat.difficulty === 'EASY') difficultyStats.easy = stat._count.id;
+      if (stat.difficulty === 'MEDIUM') difficultyStats.medium = stat._count.id;
+      if (stat.difficulty === 'HARD') difficultyStats.hard = stat._count.id;
+    });
+
     res.json({
       success: true,
-      data: user,
+      data: {
+        ...user,
+        solvedStats: difficultyStats
+      },
     });
   } catch (error) {
     throw error;

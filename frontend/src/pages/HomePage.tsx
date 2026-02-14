@@ -5,13 +5,42 @@ import { Code2, Trophy, Users, TrendingUp, Zap, Target, Award, ArrowRight } from
 import { motion } from 'framer-motion';
 import CountUp from 'react-countup';
 import { Button } from '../components/ui';
+import { useAuthStore } from '@/store';
 
 const HomePage = () => {
+  const { user } = useAuthStore();
+  const [statsData, setStatsData] = React.useState({
+    totalProblems: 0,
+    totalUsers: 0,
+    totalSubmissions: 0,
+    totalContests: 0
+  });
+
+  React.useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        // Dynamic import to avoid circular dependencies if any, 
+        // though strictly not needed here, good practice in some architectures.
+        // But here we just import api directly at top level usually.
+        // Let's use the imported api from services.
+        const { api } = await import('../services/api');
+        const response: any = await api.getGlobalStats();
+        if (response.success) {
+          setStatsData(response.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch global stats:', error);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
   const stats = [
-    { value: 500, suffix: '+', label: 'Problems' },
-    { value: 1000, suffix: '+', label: 'Active Users' },
-    { value: 10000, suffix: '+', label: 'Submissions' },
-    { value: 50, suffix: '+', label: 'Contests' },
+    { value: statsData.totalProblems, suffix: '+', label: 'Problems' },
+    { value: statsData.totalUsers, suffix: '+', label: 'Active Users' },
+    { value: statsData.totalSubmissions, suffix: '+', label: 'Submissions' },
+    { value: statsData.totalContests, suffix: '+', label: 'Contests' },
   ];
 
   const features = [

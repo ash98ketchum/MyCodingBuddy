@@ -65,11 +65,11 @@ function App() {
           <Route
             path="/"
             element={
-              <PrivateRoute>
+              <>
                 <Navbar />
                 <HomePage />
                 <Footer />
-              </PrivateRoute>
+              </>
             }
           />
           <Route

@@ -1,8 +1,8 @@
 // backend/src/worker/index.ts
 import { submissionQueue } from '@/services/judge.service';
 import prisma from '@/config/database';
-import { Verdict } from '@prisma/client';
-import { executeCode } from './executor';
+// import { Verdict } from '@prisma/client';
+import { executeBatch } from './executor';
 
 submissionQueue.process(3, async (job) => {
   const { submissionId, code, language, testCases, timeLimit, memoryLimit } = job.data;
@@ -10,75 +10,64 @@ submissionQueue.process(3, async (job) => {
   console.log(`🔄 Processing submission ${submissionId} `);
 
   try {
+    const { results } = await executeBatch(code, language, testCases);
+
     let passedTests = 0;
     let totalExecutionTime = 0;
     let maxMemoryUsed = 0;
-    let verdict: Verdict = 'ACCEPTED';
+    let verdict: string = 'ACCEPTED';
     let errorMessage = '';
     const testResults: any[] = [];
 
-    // Run against all test cases
-    for (let i = 0; i < testCases.length; i++) {
+    // Process results
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i];
       const testCase = testCases[i];
+      const statusId = result.status.id;
+
+      const isPassed = statusId === 3; // Accepted
+      const executionTime = parseFloat(result.time) * 1000 || 0; // Judge0 returns seconds
+      const memoryUsed = result.memory || 0; // Judge0 returns KB
+
+      totalExecutionTime += executionTime;
+      maxMemoryUsed = Math.max(maxMemoryUsed, memoryUsed);
+
       const testResult: any = {
         testCaseNumber: i + 1,
         input: testCase.input,
         expectedOutput: testCase.expectedOutput,
-        passed: false,
+        actualOutput: result.stdout ? result.stdout.trim() : '',
+        passed: isPassed,
+        executionTime,
+        memoryUsed,
       };
 
-      try {
-        const result = await executeCode(
-          code,
-          language,
-          testCase.input,
-          timeLimit,
-          memoryLimit
-        );
-
-        totalExecutionTime += result.executionTime;
-        maxMemoryUsed = Math.max(maxMemoryUsed, result.memoryUsed);
-
-        // Check output
-        const actualOutput = result.output.trim();
-        const expectedOutput = testCase.expectedOutput.trim();
-
-        testResult.actualOutput = actualOutput;
-        testResult.executionTime = result.executionTime;
-        testResult.memoryUsed = result.memoryUsed;
-
-        if (actualOutput === expectedOutput) {
-          passedTests++;
-          testResult.passed = true;
-        } else {
-          verdict = 'WRONG_ANSWER';
-          errorMessage = `Test case ${i + 1} failed`;
-        }
-      } catch (error: any) {
-        testResult.actualOutput = '';
-        testResult.error = error.message;
-
-        if (error.message.includes('TIMEOUT')) {
-          verdict = 'TIME_LIMIT_EXCEEDED';
-          errorMessage = `Test case ${i + 1}: Time limit exceeded`;
-        } else if (error.message.includes('MEMORY')) {
-          verdict = 'MEMORY_LIMIT_EXCEEDED';
-          errorMessage = `Test case ${i + 1}: Memory limit exceeded`;
-        } else if (error.message.includes('COMPILATION')) {
-          verdict = 'COMPILATION_ERROR';
-          errorMessage = error.message;
-        } else {
-          verdict = 'RUNTIME_ERROR';
-          errorMessage = `Test case ${i + 1}: ${error.message} `;
+      if (isPassed) {
+        passedTests++;
+      } else {
+        // Only set the first error as the main verdict
+        if (verdict === 'ACCEPTED') {
+          if (statusId === 4) {
+            verdict = 'WRONG_ANSWER';
+            errorMessage = `Test case ${i + 1} failed`;
+          } else if (statusId === 5) {
+            verdict = 'TIME_LIMIT_EXCEEDED';
+            errorMessage = `Test case ${i + 1}: Time limit exceeded`;
+          } else if (statusId === 6) {
+            verdict = 'COMPILATION_ERROR';
+            errorMessage = result.compile_output || result.stderr || 'Compilation failed';
+          } else if (statusId >= 7 && statusId <= 12) {
+            verdict = 'RUNTIME_ERROR';
+            errorMessage = `Test case ${i + 1}: ${result.status.description}`;
+            testResult.error = result.stderr || result.message;
+          } else {
+            verdict = 'RUNTIME_ERROR';
+            errorMessage = `Test case ${i + 1}: ${result.status.description}`;
+          }
         }
       }
 
       testResults.push(testResult);
-
-      // Stop on first failure for non-accepted verdicts
-      if (verdict !== 'ACCEPTED') {
-        break;
-      }
     }
 
     // Calculate score

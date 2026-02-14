@@ -1,48 +1,12 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Refactored for SQLite compatibility
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-enum Role {
-  USER
-  ADMIN
-}
-
-enum Difficulty {
-  EASY
-  MEDIUM
-  HARD
-}
-
-enum Language {
-  JAVASCRIPT
-  PYTHON
-  JAVA
-  CPP
-  C
-}
-
-enum Verdict {
-  PENDING
-  ACCEPTED
-  WRONG_ANSWER
-  TIME_LIMIT_EXCEEDED
-  MEMORY_LIMIT_EXCEEDED
-  RUNTIME_ERROR
-  COMPILATION_ERROR
-}
-
-enum PlanType {
-  FREE
-  PREMIUM
-  ENTERPRISE
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model User {
@@ -51,8 +15,8 @@ model User {
   email             String              @unique
   password          String
   fullName          String?
-  role              Role                @default(USER)
-  planType          PlanType            @default(FREE)
+  role              String              @default("USER") // enum Role
+  planType          String              @default("FREE") // enum PlanType
   rating            Int?
   streak            Int?
   lastSolvedAt      DateTime?
@@ -86,9 +50,9 @@ model Problem {
   title             String
   slug              String              @unique
   description       String
-  difficulty        Difficulty
+  difficulty        String              // enum Difficulty
   rating            Int                 @default(1200)
-  tags              String[]
+  tags              String              // SQLite doesn't support String[], store as CSV
   sampleInput       String
   sampleOutput      String
   explanation       String?
@@ -137,15 +101,15 @@ model Submission {
   contestId         String?
   contest           Contest?            @relation(fields: [contestId], references: [id], onDelete: SetNull)
   code              String
-  language          Language
-  verdict           Verdict             @default(PENDING)
+  language          String              // enum Language
+  verdict           String              @default("PENDING") // enum Verdict
   executionTime     Int?                // milliseconds
   memoryUsed        Int?                // KB
   score             Int                 @default(0)
   testCasesPassed   Int                 @default(0)
   totalTestCases    Int                 @default(0)
   errorMessage      String?
-  testResults       Json?               // Detailed results for each test case
+  testResults       String?             // SQLite doesn't support JSON, store as stringified JSON
   createdAt         DateTime            @default(now())
   
   @@index([userId, createdAt])
@@ -261,7 +225,7 @@ model Payment {
   userId            String
   amount            Float
   currency          String              @default("USD")
-  planType          PlanType
+  planType          String              // enum PlanType
   transactionId     String              @unique
   paymentMethod     String
   status            String

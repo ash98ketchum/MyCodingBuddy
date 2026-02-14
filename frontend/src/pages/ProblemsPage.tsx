@@ -206,9 +206,9 @@ const ProblemsPage = () => {
                           <Badge variant={problem.difficulty.toLowerCase() as any}>
                             {problem.difficulty}
                           </Badge>
-                          {problem.tags && problem.tags.map((tag) => (
-                            <Badge key={tag} variant="tag">
-                              {tag}
+                          {problem.tags && typeof problem.tags === 'string' && problem.tags.split(',').filter(Boolean).map((tag) => (
+                            <Badge key={tag.trim()} variant="tag">
+                              {tag.trim()}
                             </Badge>
                           ))}
                         </div>

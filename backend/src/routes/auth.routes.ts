@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { register, login, getProfile, updateProfile } from '@/controllers/auth.controller';
 import { authenticate } from '@/middleware/auth';
 import { validate } from '@/middleware/validate';
+import { asyncHandler } from '@/middleware/asyncHandler';
 import { z } from 'zod';
 
 const router = Router();
@@ -35,9 +36,9 @@ const updateProfileSchema = z.object({
   }),
 });
 
-router.post('/register', validate(registerSchema), register);
-router.post('/login', validate(loginSchema), login);
-router.get('/profile', authenticate, getProfile);
-router.put('/profile', authenticate, validate(updateProfileSchema), updateProfile);
+router.post('/register', validate(registerSchema), asyncHandler(register));
+router.post('/login', validate(loginSchema), asyncHandler(login));
+router.get('/profile', authenticate, asyncHandler(getProfile));
+router.put('/profile', authenticate, validate(updateProfileSchema), asyncHandler(updateProfile));
 
 export default router;

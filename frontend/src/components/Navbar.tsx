@@ -84,27 +84,44 @@ const Navbar = () => {
               </Link>
             )}
 
-            <div className="flex items-center gap-3 ml-4 pl-4 border-l border-gray-200 dark:border-dark-700">
-              <Link
-                to="/profile"
-                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-800 transition-colors group"
-              >
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent to-secondary flex items-center justify-center text-white font-medium text-sm">
-                  {user?.username?.charAt(0).toUpperCase()}
-                </div>
-                <span className="font-medium text-sm text-gray-900 dark:text-gray-100 group-hover:text-accent transition-colors">
-                  {user?.username}
-                </span>
-              </Link>
+            {user ? (
+              <div className="flex items-center gap-3 ml-4 pl-4 border-l border-gray-200 dark:border-dark-700">
+                <Link
+                  to="/profile"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-800 transition-colors group"
+                >
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent to-secondary flex items-center justify-center text-white font-medium text-sm">
+                    {user.username?.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="font-medium text-sm text-gray-900 dark:text-gray-100 group-hover:text-accent transition-colors">
+                    {user.username}
+                  </span>
+                </Link>
 
-              <button
-                onClick={handleLogout}
-                className="p-2 text-gray-600 hover:text-error hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                title="Logout"
-              >
-                <LogOut size={18} />
-              </button>
-            </div>
+                <button
+                  onClick={handleLogout}
+                  className="p-2 text-gray-600 hover:text-error hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                  title="Logout"
+                >
+                  <LogOut size={18} />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 ml-4 pl-4 border-l border-gray-200 dark:border-dark-700">
+                <Link
+                  to="/login"
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-accent transition-colors"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/register"
+                  className="px-4 py-2 bg-accent text-white hover:bg-accent/90 rounded-lg text-sm font-medium transition-colors"
+                >
+                  Register
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -154,25 +171,46 @@ const Navbar = () => {
 
               <div className="border-t border-gray-100 dark:border-dark-800 my-2" />
 
-              <Link
-                to="/profile"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-800 transition-colors"
-              >
-                <User size={16} />
-                Profile ({user?.username})
-              </Link>
+              {user ? (
+                <>
+                  <Link
+                    to="/profile"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-800 transition-colors"
+                  >
+                    <User size={16} />
+                    Profile ({user.username})
+                  </Link>
 
-              <button
-                onClick={() => {
-                  handleLogout();
-                  setIsMobileMenuOpen(false);
-                }}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-error hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left"
-              >
-                <LogOut size={16} />
-                Logout
-              </button>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-error hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left"
+                  >
+                    <LogOut size={16} />
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <div className="flex flex-col gap-2 p-2">
+                  <Link
+                    to="/login"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="px-4 py-2 text-center rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-800 border border-gray-200 dark:border-dark-700 transition-colors"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/register"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="px-4 py-2 text-center rounded-lg text-sm font-medium bg-accent text-white hover:bg-accent/90 transition-colors"
+                  >
+                    Register
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         )}

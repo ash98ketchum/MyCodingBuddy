@@ -89,6 +89,13 @@ app.listen(PORT, async () => {
   try {
     await prisma.$connect();
     console.log('✅ Database connected');
+
+    // Start worker in the same process for local development (Mock Queue support)
+    // This allows testing code execution without a separate Redis/Worker process
+    if (!process.env.REDIS_URL || process.env.REDIS_URL.includes('localhost')) {
+      console.log('👷 Starting worker in the same process for local development...');
+      await import('./worker/index');
+    }
   } catch (error) {
     console.error('❌ Database connection failed:', error);
   }

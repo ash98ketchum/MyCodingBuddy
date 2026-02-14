@@ -1,5 +1,5 @@
 // backend/prisma/seed-admin.ts
-import { PrismaClient, Role } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -12,7 +12,7 @@ const prisma = new PrismaClient();
 async function main() {
   const email = process.env.ADMIN_EMAIL;
   const password = process.env.ADMIN_PASSWORD;
-  
+
   if (!email || !password) {
     console.error('ADMIN_EMAIL or ADMIN_PASSWORD not set in .env');
     console.log('Current env:', { email, password: password ? '********' : undefined });
@@ -27,7 +27,7 @@ async function main() {
     where: { email },
     update: {
       password: hashedPassword,
-      role: Role.ADMIN,
+      role: 'ADMIN',
       isVerified: true,
       isPremium: true
     },
@@ -36,7 +36,7 @@ async function main() {
       username: 'admin',
       password: hashedPassword,
       fullName: 'Admin User',
-      role: Role.ADMIN,
+      role: 'ADMIN',
       isVerified: true,
       isPremium: true
     },

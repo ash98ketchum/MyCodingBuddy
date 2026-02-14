@@ -14,6 +14,12 @@ export interface User {
   organization?: string;
   isPremium: boolean;
   createdAt: string;
+  solvedStats?: {
+    easy: number;
+    medium: number;
+    hard: number;
+    total: number;
+  };
 }
 
 export interface Problem {

@@ -18,7 +18,7 @@ class ApiService {
     // Request interceptor
     this.api.interceptors.request.use(
       (config) => {
-        const token = localStorage.getItem('token');
+        const token = sessionStorage.getItem('token');
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -34,16 +34,16 @@ class ApiService {
       (response) => response.data,
       (error: AxiosError<any>) => {
         const message = error.response?.data?.message || 'Something went wrong';
-        
+
         if (error.response?.status === 401) {
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
+          sessionStorage.removeItem('token');
+          sessionStorage.removeItem('user');
           window.location.href = '/login';
           toast.error('Session expired. Please login again.');
         } else {
           toast.error(message);
         }
-        
+
         return Promise.reject(error);
       }
     );
@@ -89,6 +89,10 @@ class ApiService {
 
   async getProblemStats() {
     return this.api.get('/problems/stats');
+  }
+
+  async getGlobalStats() {
+    return this.api.get('/problems/global-stats');
   }
 
   // Submissions
