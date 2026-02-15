@@ -1,35 +1,72 @@
 // backend/src/controllers/discussion.controller.ts
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '@/middleware/auth';
 import prisma from '@/config/database';
 import { AppError } from '@/middleware/error';
 
 // Get all discussions with pagination and filters
-export const getDiscussions = async (req: Request, res: Response) => {
+export const getDiscussions = async (req: AuthRequest, res: Response) => {
     const { page = '1', limit = '20', problemId, tags, sort = 'recent' } = req.query;
-    const pageNum = parseInt(page as string);
-    const limitNum = parseInt(limit as string);
+
+    // Validate sort parameter
+    const VALID_SORT_VALUES = ['recent', 'popular', 'unanswered'] as const;
+    if (sort && !VALID_SORT_VALUES.includes(sort as any)) {
+        return res.status(400).json({
+            success: false,
+            message: `Invalid sort parameter. Must be one of: ${VALID_SORT_VALUES.join(', ')}`,
+            errorCode: 'INVALID_SORT_PARAM'
+        });
+    }
+
+    // Validate and parse pagination
+    const pageNum = parseInt(page as string, 10);
+    const limitNum = parseInt(limit as string, 10);
+
+    if (isNaN(pageNum) || pageNum < 1) {
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid page number. Must be a positive integer.',
+            errorCode: 'INVALID_PAGE'
+        });
+    }
+
+    if (isNaN(limitNum) || limitNum < 1 || limitNum > 100) {
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid limit. Must be between 1 and 100.',
+            errorCode: 'INVALID_LIMIT'
+        });
+    }
+
     const skip = (pageNum - 1) * limitNum;
 
     const where: any = {};
 
-    if (problemId) {
-        where.problemId = problemId as string;
+    if (problemId && typeof problemId === 'string') {
+        where.problemId = problemId;
     }
 
-    if (tags) {
+    if (tags && typeof tags === 'string') {
         // Simple tag search (contains)
         where.tags = {
-            contains: tags as string,
+            contains: tags,
         };
     }
 
-    let orderBy: any = { createdAt: 'desc' }; // Default: recent
-
-    if (sort === 'popular') {
-        orderBy = { viewCount: 'desc' };
-    } else if (sort === 'unanswered') {
-        orderBy = { createdAt: 'desc' };
-        where.comments = { none: {} };
+    // Safe orderBy construction with switch
+    let orderBy: any;
+    switch (sort) {
+        case 'popular':
+            orderBy = { viewCount: 'desc' };
+            break;
+        case 'unanswered':
+            orderBy = { createdAt: 'desc' };
+            where.comments = { none: {} };
+            break;
+        case 'recent':
+        default:
+            orderBy = { createdAt: 'desc' };
+            break;
     }
 
     const [discussions, total] = await Promise.all([
@@ -81,8 +118,12 @@ export const getDiscussions = async (req: Request, res: Response) => {
 };
 
 // Get single discussion by ID
-export const getDiscussionById = async (req: Request, res: Response) => {
+export const getDiscussionById = async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
+
+    if (!id || typeof id !== 'string') {
+        throw new AppError('Discussion ID is required', 400);
+    }
 
     const discussion = await prisma.discussion.findUnique({
         where: { id },
@@ -184,12 +225,14 @@ export const getDiscussionById = async (req: Request, res: Response) => {
 
     res.json({
         success: true,
-        data: discussion,
+        data: {
+            discussion,
+        },
     });
 };
 
 // Create new discussion
-export const createDiscussion = async (req: Request, res: Response) => {
+export const createDiscussion = async (req: AuthRequest, res: Response) => {
     const { title, content, problemId, tags } = req.body;
     const userId = req.user!.userId;
 
@@ -227,10 +270,14 @@ export const createDiscussion = async (req: Request, res: Response) => {
 };
 
 // Update discussion
-export const updateDiscussion = async (req: Request, res: Response) => {
+export const updateDiscussion = async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
     const { title, content, tags } = req.body;
     const userId = req.user!.userId;
+
+    if (!id || typeof id !== 'string') {
+        throw new AppError('Discussion ID is required', 400);
+    }
 
     const discussion = await prisma.discussion.findUnique({
         where: { id },
@@ -269,10 +316,14 @@ export const updateDiscussion = async (req: Request, res: Response) => {
 };
 
 // Delete discussion
-export const deleteDiscussion = async (req: Request, res: Response) => {
+export const deleteDiscussion = async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
     const userId = req.user!.userId;
     const userRole = req.user!.role;
+
+    if (!id || typeof id !== 'string') {
+        throw new AppError('Discussion ID is required', 400);
+    }
 
     const discussion = await prisma.discussion.findUnique({
         where: { id },
@@ -298,9 +349,13 @@ export const deleteDiscussion = async (req: Request, res: Response) => {
 };
 
 // Toggle pin (admin only)
-export const togglePin = async (req: Request, res: Response) => {
+export const togglePin = async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
     const userRole = req.user!.role;
+
+    if (!id || typeof id !== 'string') {
+        throw new AppError('Discussion ID is required', 400);
+    }
 
     if (userRole !== 'ADMIN') {
         throw new AppError('Only admins can pin discussions', 403);
@@ -328,10 +383,14 @@ export const togglePin = async (req: Request, res: Response) => {
 };
 
 // Toggle close
-export const toggleClose = async (req: Request, res: Response) => {
+export const toggleClose = async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
     const userId = req.user!.userId;
     const userRole = req.user!.role;
+
+    if (!id || typeof id !== 'string') {
+        throw new AppError('Discussion ID is required', 400);
+    }
 
     const discussion = await prisma.discussion.findUnique({
         where: { id },
