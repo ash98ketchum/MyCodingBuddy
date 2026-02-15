@@ -64,9 +64,13 @@ export const createComment = async (req: AuthRequest, res: Response) => {
 
 // Update comment
 export const updateComment = async (req: AuthRequest, res: Response) => {
-    const { id } = req.params as { id: string };
+    const { id } = req.params;
     const { content } = req.body;
     const userId = req.user!.userId;
+
+    if (!id || typeof id !== 'string') {
+        throw new AppError('Comment ID is required', 400);
+    }
 
     const comment = await prisma.comment.findUnique({
         where: { id },
@@ -102,9 +106,13 @@ export const updateComment = async (req: AuthRequest, res: Response) => {
 
 // Delete comment
 export const deleteComment = async (req: AuthRequest, res: Response) => {
-    const { id } = req.params as { id: string };
+    const { id } = req.params;
     const userId = req.user!.userId;
     const userRole = req.user!.role;
+
+    if (!id || typeof id !== 'string') {
+        throw new AppError('Comment ID is required', 400);
+    }
 
     const comment = await prisma.comment.findUnique({
         where: { id },
@@ -131,8 +139,12 @@ export const deleteComment = async (req: AuthRequest, res: Response) => {
 
 // Mark comment as accepted solution
 export const markAsAccepted = async (req: AuthRequest, res: Response) => {
-    const { id } = req.params as { id: string };
+    const { id } = req.params;
     const userId = req.user!.userId;
+
+    if (!id || typeof id !== 'string') {
+        throw new AppError('Comment ID is required', 400);
+    }
 
     const comment = await prisma.comment.findUnique({
         where: { id },
@@ -146,7 +158,7 @@ export const markAsAccepted = async (req: AuthRequest, res: Response) => {
     }
 
     // Only discussion author can mark as accepted
-    if (comment.discussion.userId !== userId) {
+    if (comment.discussion!.userId !== userId) {
         throw new AppError('Only discussion author can mark answer as accepted', 403);
     }
 

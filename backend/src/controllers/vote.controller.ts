@@ -1,10 +1,11 @@
 // backend/src/controllers/vote.controller.ts
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '@/middleware/auth';
 import prisma from '@/config/database';
 import { AppError } from '@/middleware/error';
 
 // Vote on discussion or comment
-export const vote = async (req: Request, res: Response) => {
+export const vote = async (req: AuthRequest, res: Response) => {
     const { type, discussionId, commentId } = req.body;
     const userId = req.user!.userId;
 
@@ -123,7 +124,7 @@ export const vote = async (req: Request, res: Response) => {
 };
 
 // Remove vote
-export const removeVote = async (req: Request, res: Response) => {
+export const removeVote = async (req: AuthRequest, res: Response) => {
     const { discussionId, commentId } = req.body;
     const userId = req.user!.userId;
 
