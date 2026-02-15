@@ -1,10 +1,11 @@
 // backend/src/controllers/comment.controller.ts
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '@/middleware/auth';
 import prisma from '@/config/database';
 import { AppError } from '@/middleware/error';
 
 // Create comment
-export const createComment = async (req: Request, res: Response) => {
+export const createComment = async (req: AuthRequest, res: Response) => {
     const { discussionId, content, parentId } = req.body;
     const userId = req.user!.userId;
 
@@ -62,8 +63,8 @@ export const createComment = async (req: Request, res: Response) => {
 };
 
 // Update comment
-export const updateComment = async (req: Request, res: Response) => {
-    const { id } = req.params;
+export const updateComment = async (req: AuthRequest, res: Response) => {
+    const { id } = req.params as { id: string };
     const { content } = req.body;
     const userId = req.user!.userId;
 
@@ -100,8 +101,8 @@ export const updateComment = async (req: Request, res: Response) => {
 };
 
 // Delete comment
-export const deleteComment = async (req: Request, res: Response) => {
-    const { id } = req.params;
+export const deleteComment = async (req: AuthRequest, res: Response) => {
+    const { id } = req.params as { id: string };
     const userId = req.user!.userId;
     const userRole = req.user!.role;
 
@@ -129,8 +130,8 @@ export const deleteComment = async (req: Request, res: Response) => {
 };
 
 // Mark comment as accepted solution
-export const markAsAccepted = async (req: Request, res: Response) => {
-    const { id } = req.params;
+export const markAsAccepted = async (req: AuthRequest, res: Response) => {
+    const { id } = req.params as { id: string };
     const userId = req.user!.userId;
 
     const comment = await prisma.comment.findUnique({
