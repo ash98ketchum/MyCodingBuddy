@@ -29,6 +29,7 @@ const Navbar = () => {
 
   const navLinks = [
     { path: '/problems', label: 'Problems' },
+    { path: '/discuss', label: 'Discuss' },
     { path: '/leaderboard', label: 'Leaderboard' },
   ];
 

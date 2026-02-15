@@ -13,6 +13,8 @@ import ProblemPage from './pages/ProblemPage';
 import LeaderboardPage from './pages/LeaderboardPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminDashboard from './pages/AdminDashboard';
+import DiscussPage from './pages/DiscussPage';
+import DiscussionDetailPage from './pages/DiscussionDetailPage';
 
 // Layout
 import Navbar from './components/Navbar';
@@ -97,6 +99,26 @@ function App() {
               <PrivateRoute>
                 <Navbar />
                 <LeaderboardPage />
+                <Footer />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/discuss"
+            element={
+              <PrivateRoute>
+                <Navbar />
+                <DiscussPage />
+                <Footer />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/discuss/:id"
+            element={
+              <PrivateRoute>
+                <Navbar />
+                <DiscussionDetailPage />
                 <Footer />
               </PrivateRoute>
             }

@@ -1,10 +1,11 @@
 // backend/src/controllers/reaction.controller.ts
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '@/middleware/auth';
 import prisma from '@/config/database';
 import { AppError } from '@/middleware/error';
 
 // Toggle reaction (add or remove)
-export const toggleReaction = async (req: Request, res: Response) => {
+export const toggleReaction = async (req: AuthRequest, res: Response) => {
     const { emoji, discussionId, commentId } = req.body;
     const userId = req.user!.userId;
 
@@ -84,7 +85,7 @@ export const toggleReaction = async (req: Request, res: Response) => {
 };
 
 // Get reactions for discussion or comment
-export const getReactions = async (req: Request, res: Response) => {
+export const getReactions = async (req: AuthRequest, res: Response) => {
     const { discussionId, commentId } = req.query;
 
     if (!discussionId && !commentId) {
