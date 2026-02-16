@@ -15,10 +15,30 @@ import ProfilePage from './pages/ProfilePage';
 import AdminDashboard from './pages/AdminDashboard';
 import DiscussPage from './pages/DiscussPage';
 import DiscussionDetailPage from './pages/DiscussionDetailPage';
+import AboutPage from './pages/AboutPage';
+
+// Legal Pages
+import TermsPage from './pages/Legal/TermsPage';
+import PrivacyPage from './pages/Legal/PrivacyPage';
+import CodeOfConductPage from './pages/Legal/CodeOfConductPage';
+import LicensePage from './pages/Legal/LicensePage';
+
+// Support Pages
+import HelpPage from './pages/Support/HelpPage';
+import ContactPage from './pages/Support/ContactPage';
+import ReportPage from './pages/Support/ReportPage';
+import FeatureRequestPage from './pages/Support/FeatureRequestPage';
+
+// Resources Pages
+import DocsPage from './pages/Resources/DocsPage';
+import ApiDocsPage from './pages/Resources/ApiDocsPage';
+import TutorialsPage from './pages/Resources/TutorialsPage';
+import BlogPage from './pages/Resources/BlogPage';
 
 // Layout
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import ScrollToTop from './components/ScrollToTop';
 
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
@@ -33,6 +53,7 @@ const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <div className="min-h-screen bg-background flex flex-col">
         <Toaster
           position="top-right"
@@ -133,6 +154,36 @@ function App() {
               </PrivateRoute>
             }
           />
+
+          {/* Footer Pages */}
+          <Route
+            path="/about"
+            element={
+              <>
+                <Navbar />
+                <AboutPage />
+                <Footer />
+              </>
+            }
+          />
+
+          {/* Legal */}
+          <Route path="/terms" element={<><Navbar /><TermsPage /><Footer /></>} />
+          <Route path="/privacy" element={<><Navbar /><PrivacyPage /><Footer /></>} />
+          <Route path="/code-of-conduct" element={<><Navbar /><CodeOfConductPage /><Footer /></>} />
+          <Route path="/license" element={<><Navbar /><LicensePage /><Footer /></>} />
+
+          {/* Support */}
+          <Route path="/help" element={<><Navbar /><HelpPage /><Footer /></>} />
+          <Route path="/contact" element={<><Navbar /><ContactPage /><Footer /></>} />
+          <Route path="/report" element={<><Navbar /><ReportPage /><Footer /></>} />
+          <Route path="/feature-request" element={<><Navbar /><FeatureRequestPage /><Footer /></>} />
+
+          {/* Resources */}
+          <Route path="/docs" element={<><Navbar /><DocsPage /><Footer /></>} />
+          <Route path="/api-docs" element={<><Navbar /><ApiDocsPage /><Footer /></>} />
+          <Route path="/tutorials" element={<><Navbar /><TutorialsPage /><Footer /></>} />
+          <Route path="/blog" element={<><Navbar /><BlogPage /><Footer /></>} />
 
           {/* Admin Routes */}
           <Route
