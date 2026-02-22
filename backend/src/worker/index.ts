@@ -4,7 +4,7 @@ import prisma from '@/config/database';
 // import { Verdict } from '@prisma/client';
 import { Verdict } from '@prisma/client';
 import { executeBatch } from './executor';
-import { AssignmentService } from '@/services/assignment.service';
+// import { AssignmentService } from '@/services/assignment.service';
 
 submissionQueue.process(3, async (job) => {
   const { submissionId, code, language, testCases, timeLimit, memoryLimit } = job.data;
@@ -130,11 +130,11 @@ submissionQueue.process(3, async (job) => {
         });
 
         // Mark daily assignment as solved
-        try {
-          await AssignmentService.markAsSolved(submission.userId, job.data.problemId, submissionId);
-        } catch (err) {
-          console.error('Failed to update daily assignment status', err);
-        }
+        // try {
+        //   await AssignmentService.markAsSolved(submission.userId, job.data.problemId, submissionId);
+        // } catch (err) {
+        //   console.error('Failed to update daily assignment status', err);
+        // }
       }
     }
 

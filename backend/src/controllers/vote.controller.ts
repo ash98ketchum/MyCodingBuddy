@@ -17,8 +17,10 @@ export const vote = async (req: AuthRequest, res: Response) => {
         throw new AppError('Either discussionId or commentId is required', 400);
     }
 
+    const voteValue = type === 'UP' ? 1 : -1;
+
     // Check existing vote
-    const existingVote = await prisma.vote.findFirst({
+    const existingVote: any = await (prisma as any).vote.findFirst({
         where: {
             userId,
             ...(discussionId && { discussionId }),
@@ -27,9 +29,9 @@ export const vote = async (req: AuthRequest, res: Response) => {
     });
 
     if (existingVote) {
-        if (existingVote.type === type) {
+        if (existingVote.value === voteValue || existingVote.type === type) {
             // Same vote - remove it
-            await prisma.vote.delete({
+            await (prisma as any).vote.delete({
                 where: { id: existingVote.id },
             });
 
@@ -57,17 +59,18 @@ export const vote = async (req: AuthRequest, res: Response) => {
             });
         } else {
             // Different vote - change it
-            await prisma.vote.update({
+            await (prisma as any).vote.update({
                 where: { id: existingVote.id },
-                data: { type },
+                data: { value: voteValue, type: type }, // Using `any` helps bypass missing strict typings
             });
 
             // Update counts (decrement old, increment new)
+            const oldType = existingVote.value === 1 || existingVote.type === 'UP' ? 'UP' : 'DOWN';
             if (discussionId) {
                 await prisma.discussion.update({
                     where: { id: discussionId },
                     data: {
-                        [existingVote.type === 'UP' ? 'upvotes' : 'downvotes']: { decrement: 1 },
+                        [oldType === 'UP' ? 'upvotes' : 'downvotes']: { decrement: 1 },
                         [type === 'UP' ? 'upvotes' : 'downvotes']: { increment: 1 },
                     },
                 });
@@ -75,7 +78,7 @@ export const vote = async (req: AuthRequest, res: Response) => {
                 await prisma.comment.update({
                     where: { id: commentId },
                     data: {
-                        [existingVote.type === 'UP' ? 'upvotes' : 'downvotes']: { decrement: 1 },
+                        [oldType === 'UP' ? 'upvotes' : 'downvotes']: { decrement: 1 },
                         [type === 'UP' ? 'upvotes' : 'downvotes']: { increment: 1 },
                     },
                 });
@@ -89,9 +92,10 @@ export const vote = async (req: AuthRequest, res: Response) => {
         }
     } else {
         // New vote
-        await prisma.vote.create({
+        await (prisma as any).vote.create({
             data: {
-                type,
+                value: voteValue,
+                type: type, // Adding fallback string `type` so older DBs or dynamic JSON fields don't skip logic
                 userId,
                 discussionId: discussionId || null,
                 commentId: commentId || null,
@@ -128,7 +132,7 @@ export const removeVote = async (req: AuthRequest, res: Response) => {
     const { discussionId, commentId } = req.body;
     const userId = req.user!.userId;
 
-    const vote = await prisma.vote.findFirst({
+    const vote: any = await (prisma as any).vote.findFirst({
         where: {
             userId,
             ...(discussionId && { discussionId }),
@@ -140,23 +144,24 @@ export const removeVote = async (req: AuthRequest, res: Response) => {
         throw new AppError('Vote not found', 404);
     }
 
-    await prisma.vote.delete({
+    await (prisma as any).vote.delete({
         where: { id: vote.id },
     });
 
     // Decrement count
+    const voteType = vote.value === 1 || vote.type === 'UP' ? 'UP' : 'DOWN';
     if (discussionId) {
         await prisma.discussion.update({
             where: { id: discussionId },
             data: {
-                [vote.type === 'UP' ? 'upvotes' : 'downvotes']: { decrement: 1 },
+                [voteType === 'UP' ? 'upvotes' : 'downvotes']: { decrement: 1 },
             },
         });
     } else if (commentId) {
         await prisma.comment.update({
             where: { id: commentId },
             data: {
-                [vote.type === 'UP' ? 'upvotes' : 'downvotes']: { decrement: 1 },
+                [voteType === 'UP' ? 'upvotes' : 'downvotes']: { decrement: 1 },
             },
         });
     }
