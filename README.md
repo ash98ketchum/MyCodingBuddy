@@ -113,6 +113,14 @@
 - 📊 Database backups
 - 🚀 Performance optimization
 
+#### College Integration & Analytics (B2B Module)
+- 🏫 **College-Specific Scoping**: Isolated dashboards for individual institutions mapping strictly by `collegeId`.
+- 📊 **Premium Reporting**: Visual insights via Recharts for solve curves, attempts/AC, and difficulty tracking.
+- 🎓 **Student Segmentation**: Automatic categorization (Top Performers, Consistent, At-Risk, Inactive).
+- 🔍 **Integrity Tracking**: Anomaly detection detailing Suspicious vs Honest submission ratios and direct-paste events.
+- 🏆 **Private Leaderboards**: Internal college ranking system preventing pollution of the global public leaderboard.
+- ⚡ **High Performance**: Redis-cached aggregated analytical Prisma queries avoiding N+1 bottlenecks.
+
 ### For Users (Clients)
 
 #### Problem Solving

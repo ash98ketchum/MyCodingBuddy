@@ -15,7 +15,11 @@ import authRoutes from './routes/auth.routes';
 import problemRoutes from './routes/problem.routes';
 import submissionRoutes from './routes/submission.routes';
 import adminRoutes from './routes/admin.routes';
+import programRoutes from './routes/admin.program.routes';
+import adminProgramAssignRoutes from './routes/admin-program.routes';
 import discussionRoutes from './routes/discussion.routes';
+import eodReportsRoutes from './modules/eodReports/eodReports.routes';
+import { initEODScheduler } from './modules/eodReports/scheduler';
 
 const app = express();
 
@@ -61,12 +65,21 @@ app.get('/health', (req, res) => {
   });
 });
 
+import collegeDashboardRoutes from './modules/collegeDashboard/collegeDashboard.routes';
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/problems', problemRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin/programs', programRoutes);
+app.use('/api/admin/program', adminProgramAssignRoutes);
+app.use('/api/admin/reports/eod', eodReportsRoutes);
+app.use('/api/admin/college', collegeDashboardRoutes); // NEW ROUTE
 app.use('/api', discussionRoutes); // Discussion routes
+
+// Initialize EOD Schedulers
+initEODScheduler();
 
 // Error handling
 app.use(notFound);
@@ -98,6 +111,10 @@ app.listen(PORT, async () => {
       console.log('👷 Starting worker in the same process for local development...');
       await import('./worker/index');
     }
+
+    // Initialize Cron Jobs
+    await import('./cron').then(m => m.initCronJobs());
+
   } catch (error) {
     console.error('❌ Database connection failed:', error);
   }

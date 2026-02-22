@@ -1,0 +1,88 @@
+﻿≡ƒöì Checking for PENDING daily assignments...
+node.exe : PrismaClientVal
+idationError: 
+At C:\Program 
+Files\nodejs\npx.ps1:29 
+char:3
++   & $NODE_EXE 
+$NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: (P  
+  rismaClientValidation   
+ Error: :String) [], R    
+emoteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+Invalid `prisma.dailyAssig
+nment.findMany()` 
+invocation in
+C:\Users\aniru\Documents\G
+itHub\MyCodingBuddy\backen
+d\scripts\dispatch-assignm
+ents.ts:9:61
+
+  6 async function main() 
+{
+  7     console.log("≡ƒöì 
+Checking for PENDING 
+daily assignments...");
+  8 
+ΓåÆ 9     const 
+pendingAssignments = 
+await prisma.dailyAssignme
+nt.findMany({
+          where: {
+            status: 
+"PENDING"
+          },
+          include: {
+            problem: true,
+            ~~~~~~~
+            student: true
+          }
+        })
+
+Unknown field `problem` 
+for include statement on 
+model `DailyAssignment`. 
+Available options are 
+marked with ?.
+    at wn (C:\Users\aniru\
+Documents\GitHub\MyCodingB
+uddy\backend\node_modules\
+@prisma\client\runtime\lib
+rary.js:29:1363)
+    at 
+$n.handleRequestError (C:\
+Users\aniru\Documents\GitH
+ub\MyCodingBuddy\backend\n
+ode_modules\@prisma\client
+\runtime\library.js:121:69
+58)
+    at $n.handleAndLogRequ
+estError (C:\Users\aniru\D
+ocuments\GitHub\MyCodingBu
+ddy\backend\node_modules\@
+prisma\client\runtime\libr
+ary.js:121:6623)
+    at $n.request (C:\User
+s\aniru\Documents\GitHub\M
+yCodingBuddy\backend\node_
+modules\@prisma\client\run
+time\library.js:121:6307)
+    at async l (C:\Users\a
+niru\Documents\GitHub\MyCo
+dingBuddy\backend\node_mod
+ules\@prisma\client\runtim
+e\library.js:130:9633)
+    at async main (C:\User
+s\aniru\Documents\GitHub\M
+yCodingBuddy\backend\scrip
+ts\dispatch-assignments.ts
+:9:32) {
+  clientVersion: '5.22.0'
+}

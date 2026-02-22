@@ -2,7 +2,9 @@
 import { submissionQueue } from '@/services/judge.service';
 import prisma from '@/config/database';
 // import { Verdict } from '@prisma/client';
+import { Verdict } from '@prisma/client';
 import { executeBatch } from './executor';
+import { AssignmentService } from '@/services/assignment.service';
 
 submissionQueue.process(3, async (job) => {
   const { submissionId, code, language, testCases, timeLimit, memoryLimit } = job.data;
@@ -15,7 +17,7 @@ submissionQueue.process(3, async (job) => {
     let passedTests = 0;
     let totalExecutionTime = 0;
     let maxMemoryUsed = 0;
-    let verdict: string = 'ACCEPTED';
+    let verdict: Verdict = Verdict.ACCEPTED;
     let errorMessage = '';
     const testResults: any[] = [];
 
@@ -46,22 +48,22 @@ submissionQueue.process(3, async (job) => {
         passedTests++;
       } else {
         // Only set the first error as the main verdict
-        if (verdict === 'ACCEPTED') {
+        if (verdict === Verdict.ACCEPTED) {
           if (statusId === 4) {
-            verdict = 'WRONG_ANSWER';
+            verdict = Verdict.WRONG_ANSWER;
             errorMessage = `Test case ${i + 1} failed`;
           } else if (statusId === 5) {
-            verdict = 'TIME_LIMIT_EXCEEDED';
+            verdict = Verdict.TIME_LIMIT_EXCEEDED;
             errorMessage = `Test case ${i + 1}: Time limit exceeded`;
           } else if (statusId === 6) {
-            verdict = 'COMPILATION_ERROR';
+            verdict = Verdict.COMPILATION_ERROR;
             errorMessage = result.compile_output || result.stderr || 'Compilation failed';
           } else if (statusId >= 7 && statusId <= 12) {
-            verdict = 'RUNTIME_ERROR';
+            verdict = Verdict.RUNTIME_ERROR;
             errorMessage = `Test case ${i + 1}: ${result.status.description}`;
             testResult.error = result.stderr || result.message;
           } else {
-            verdict = 'RUNTIME_ERROR';
+            verdict = Verdict.RUNTIME_ERROR;
             errorMessage = `Test case ${i + 1}: ${result.status.description}`;
           }
         }
@@ -92,14 +94,14 @@ submissionQueue.process(3, async (job) => {
       where: { id: job.data.problemId },
       data: {
         submissionCount: { increment: 1 },
-        ...(verdict === 'ACCEPTED' && {
+        ...(verdict === Verdict.ACCEPTED && {
           acceptedCount: { increment: 1 },
         }),
       },
     });
 
     // Update user rating if accepted
-    if (verdict === 'ACCEPTED') {
+    if (verdict === Verdict.ACCEPTED) {
       const submission = await prisma.submission.findUnique({
         where: { id: submissionId },
         include: {
@@ -126,6 +128,13 @@ submissionQueue.process(3, async (job) => {
             lastSolvedAt: new Date(),
           },
         });
+
+        // Mark daily assignment as solved
+        try {
+          await AssignmentService.markAsSolved(submission.userId, job.data.problemId, submissionId);
+        } catch (err) {
+          console.error('Failed to update daily assignment status', err);
+        }
       }
     }
 
@@ -143,7 +152,7 @@ submissionQueue.process(3, async (job) => {
     await prisma.submission.update({
       where: { id: submissionId },
       data: {
-        verdict: 'RUNTIME_ERROR',
+        verdict: Verdict.RUNTIME_ERROR,
         errorMessage: 'Internal judge error. Please try again.',
       },
     });
