@@ -16,7 +16,7 @@ import problemRoutes from './routes/problem.routes';
 import submissionRoutes from './routes/submission.routes';
 import adminRoutes from './routes/admin.routes';
 // import programRoutes from './routes/admin.program.routes';
-// import adminProgramAssignRoutes from './routes/admin-program.routes';
+import adminProgramAssignRoutes from './routes/admin-program.routes';
 import discussionRoutes from './routes/discussion.routes';
 import eodReportsRoutes from './modules/eodReports/eodReports.routes';
 import { initEODScheduler } from './modules/eodReports/scheduler';
@@ -73,7 +73,7 @@ app.use('/api/problems', problemRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/api/admin', adminRoutes);
 // app.use('/api/admin/programs', programRoutes);
-// app.use('/api/admin/program', adminProgramAssignRoutes);
+app.use('/api/admin/program', adminProgramAssignRoutes);
 app.use('/api/admin/reports/eod', eodReportsRoutes);
 app.use('/api/admin/college', collegeDashboardRoutes); // NEW ROUTE
 app.use('/api', discussionRoutes); // Discussion routes

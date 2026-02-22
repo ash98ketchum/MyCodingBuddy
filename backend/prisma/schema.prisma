@@ -36,6 +36,7 @@ model User {
   problems         Problem[]            @relation("CreatedProblems")
   submissions      Submission[]
   votes            Vote[]
+  collegeAdmin     CollegeAdmin?
 
   @@index([username])
   @@index([email])
@@ -68,6 +69,8 @@ model Problem {
   createdBy       User             @relation("CreatedProblems", fields: [createdById], references: [id])
   submissions     Submission[]
   testCases       TestCase[]
+  collegeProblems CollegeProblem[]
+  dailyAssignments DailyAssignment[]
 
   @@index([difficulty])
   @@index([rating])
@@ -293,6 +296,7 @@ model DailyAssignment {
   updatedAt DateTime @updatedAt
 
   student   ProgramStudent @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  problem   Problem        @relation(fields: [problemId], references: [id], onDelete: Cascade)
 
   @@index([programId])
   @@index([studentId])
@@ -313,6 +317,32 @@ model College {
 
   students    CollegeStudent[]
   assignments CollegeAssignment[]
+  admins      CollegeAdmin[]
+  problems    CollegeProblem[]
+}
+
+model CollegeAdmin {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  collegeId String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  college   College  @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+
+  @@index([collegeId])
+}
+
+model CollegeProblem {
+  id        String   @id @default(cuid())
+  collegeId String
+  problemId String
+  addedAt   DateTime @default(now())
+
+  college College @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@unique([collegeId, problemId])
 }
 
 model CollegeStudent {
@@ -320,11 +350,15 @@ model CollegeStudent {
   collegeId String
   email     String   @unique
   name      String
+  section     String?
+  rollNumber  String?
   joinedAt  DateTime @default(now())
 
   college     College             @relation(fields: [collegeId], references: [id], onDelete: Cascade)
   assignments CollegeAssignment[]
   analytics   CollegeSubmissionAnalytics[]
+  studentAnalytics StudentAnalytics?
+  aiReport    AIStudentReport?
 
   @@index([collegeId])
   @@index([email])
@@ -368,4 +402,35 @@ model CollegeSubmissionAnalytics {
   @@index([studentId])
   @@index([problemId])
   @@index([isAccepted])
+}
+
+model StudentAnalytics {
+  id                String   @id @default(cuid())
+  studentId         String   @unique
+  totalSolved       Int      @default(0)
+  totalAttempts     Int      @default(0)
+  avgSolveTime      Int      @default(0)
+  difficultyScore   Float    @default(0) // Weighted based on easy/med/hard
+  consistencyScore  Float    @default(0) // Based on active days
+  attemptEfficiency Float    @default(0) // AC / Attempts
+  plagiarismCount   Int      @default(0)
+  integrityScore    Float    @default(100)
+  lastActiveAt      DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  student CollegeStudent @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model AIStudentReport {
+  id               String   @id @default(cuid())
+  studentId        String   @unique
+  summary          String   
+  strengths        String[]
+  weaknesses       String[]
+  improvementPlan  String   
+  recommendedDiff  Difficulty @default(EASY)
+  integrityContext String   
+  generatedAt      DateTime @default(now())
+
+  student CollegeStudent @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }

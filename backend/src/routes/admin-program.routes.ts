@@ -11,6 +11,9 @@ router.use(requireAdmin);
 // Bloom Filter API
 router.get('/bloom', adminProgramController.getBloomFilter);
 
+// List Programs API
+router.get('/list', adminProgramController.getPrograms);
+
 // Student Verification API
 router.get('/students/verify', adminProgramController.verifyStudent);
 

@@ -76,6 +76,62 @@ export const adminProgramController = {
     },
 
     /**
+     * @route GET /api/admin/program/list
+     * @desc Get list of unique programs derived from ProgramStudent.
+     */
+    getPrograms: async (req: Request, res: Response) => {
+        try {
+            // Because the legacy Program model is gone, we aggregate existing Programs 
+            // from the programId string field on the ProgramStudent table.
+
+            const uniquePrograms = await prisma.programStudent.groupBy({
+                by: ['programId'],
+                _count: {
+                    id: true // Count number of students in the program
+                }
+            });
+
+            // For each program, count total assignments
+            const programsWithStats = await Promise.all(
+                uniquePrograms.map(async (prog) => {
+                    const assignmentCount = await prisma.dailyAssignment.count({
+                        where: { programId: prog.programId }
+                    });
+
+                    return {
+                        id: prog.programId,
+                        name: prog.programId.replace(/_/g, ' '),
+                        startDate: new Date('2026-02-01T00:00:00Z').toISOString(), // Placeholder since we don't have program start dates in DB anymore
+                        isActive: true,
+                        _count: {
+                            students: prog._count.id,
+                            assignments: assignmentCount
+                        }
+                    };
+                })
+            );
+
+            // If no programs exist yet, return a default mock so UI isn't empty
+            if (programsWithStats.length === 0) {
+                programsWithStats.push({
+                    id: 'COLLEGE_2026',
+                    name: 'COLLEGE 2026',
+                    startDate: new Date('2026-02-01T00:00:00Z').toISOString(),
+                    isActive: true,
+                    _count: {
+                        students: 0,
+                        assignments: 0
+                    }
+                });
+            }
+
+            res.json(programsWithStats); // Return shape directly to match the frontend expectations: res.data
+        } catch (error) {
+            throw new AppError('Failed to fetch programs', 500);
+        }
+    },
+
+    /**
      * @route GET /api/admin/program/students/verify
      * @desc Exact DB lookup for a student when Bloom filter says "probably exists"
      */

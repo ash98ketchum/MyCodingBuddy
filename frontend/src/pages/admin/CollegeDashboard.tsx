@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Plus, School, Calendar, Users } from 'lucide-react';
-import { api } from '@/services/api'; // Assuming generic api service exists
+import { motion } from 'framer-motion';
+import { Helmet } from 'react-helmet-async';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Plus, School, Calendar, Users, Briefcase } from 'lucide-react';
+import { api } from '@/services/api';
 
 interface Program {
     id: string;
@@ -30,8 +32,9 @@ const CollegeDashboard = () => {
 
     const fetchPrograms = async () => {
         try {
-            const res = await api.get('/admin/programs');
-            setPrograms(res.data);
+            const res: any = await api.get('/admin/program/list');
+            // Depending on backend response shape, the data is either in `res.data` or just `res` due to axios interceptors
+            setPrograms(res.data || res);
         } catch (error) {
             console.error('Failed to fetch programs', error);
         } finally {
@@ -42,6 +45,8 @@ const CollegeDashboard = () => {
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            // Note: with the removal of the Legacy Program model, program creation
+            // might need to be simulated or integrated differently going forward.
             await api.post('/admin/programs', {
                 name: newProgramName,
                 startDate: new Date(startDate).toISOString(),
@@ -55,95 +60,144 @@ const CollegeDashboard = () => {
         }
     };
 
+    // Animation variants
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        show: {
+            opacity: 1,
+            transition: { staggerChildren: 0.1 }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 20 },
+        show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } }
+    };
+
     return (
-        <div className="p-6 space-y-6">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-                        College Training Programs
-                    </h1>
-                    <p className="text-gray-400 mt-2">Manage automated training batches</p>
-                </div>
-                <Button onClick={() => setShowCreateModal(true)} className="bg-blue-600 hover:bg-blue-700">
-                    <Plus className="w-4 h-4 mr-2" />
-                    New Program
-                </Button>
-            </div>
+        <div className="min-h-screen bg-background p-4 sm:p-8 lg:p-12">
+            <Helmet>
+                <title>College Training Programs | Admin Control Panel</title>
+            </Helmet>
 
-            {loading ? (
-                <div className="text-center py-10">Loading...</div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {programs.map((program) => (
-                        <Card
-                            key={program.id}
-                            className="p-6 bg-gray-900 border-gray-800 hover:border-blue-500/50 transition-all cursor-pointer group"
-                            onClick={() => navigate(`/admin/programs/${program.id}`)}
-                        >
-                            <div className="flex justify-between items-start mb-4">
-                                <div className="p-3 rounded-lg bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors">
-                                    <School className="w-6 h-6 text-blue-400" />
-                                </div>
-                                <span className={`px-2 py-1 rounded text-xs ${program.isActive ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
-                                    {program.isActive ? 'Active' : 'Inactive'}
-                                </span>
+            <motion.div
+                className="max-w-6xl mx-auto"
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+            >
+                {/* Header */}
+                <motion.div variants={itemVariants} className="flex justify-between items-center mb-8">
+                    <div>
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="p-2.5 bg-accent/10 rounded-xl border border-accent/20 shadow-[0_0_15px_rgba(255,178,44,0.15)]">
+                                <School className="w-6 h-6 text-accent" />
                             </div>
-
-                            <h3 className="text-xl font-semibold text-white mb-2">{program.name}</h3>
-
-                            <div className="space-y-2 text-sm text-gray-400">
-                                <div className="flex items-center">
-                                    <Calendar className="w-4 h-4 mr-2" />
-                                    {new Date(program.startDate).toLocaleDateString()}
-                                </div>
-                                <div className="flex items-center">
-                                    <Users className="w-4 h-4 mr-2" />
-                                    {program._count?.students || 0} Students
-                                </div>
-                            </div>
-                        </Card>
-                    ))}
-                </div>
-            )}
-
-            {/* Simple Modal Implementation */}
-            {showCreateModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-gray-900 p-6 rounded-lg border border-gray-800 w-full max-w-md">
-                        <h2 className="text-xl font-bold mb-4">Create New Program</h2>
-                        <form onSubmit={handleCreate} className="space-y-4">
-                            <div>
-                                <label className="block text-sm text-gray-400 mb-1">Program Name</label>
-                                <input
-                                    type="text"
-                                    value={newProgramName}
-                                    onChange={(e) => setNewProgramName(e.target.value)}
-                                    className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm text-gray-400 mb-1">Start Date</label>
-                                <input
-                                    type="date"
-                                    value={startDate}
-                                    onChange={(e) => setStartDate(e.target.value)}
-                                    className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white"
-                                    required
-                                />
-                            </div>
-                            <div className="flex justify-end gap-3 mt-6">
-                                <Button type="button" variant="ghost" onClick={() => setShowCreateModal(false)}>
-                                    Cancel
-                                </Button>
-                                <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-                                    Create
-                                </Button>
-                            </div>
-                        </form>
+                            <h1 className="text-3xl font-extrabold tracking-tight text-text-primary">
+                                College Training Programs
+                            </h1>
+                        </div>
+                        <p className="text-text-secondary max-w-2xl text-lg">
+                            Manage automated training batches and monitor aggregated student engagement.
+                        </p>
                     </div>
-                </div>
-            )}
+                    <Button onClick={() => setShowCreateModal(true)} className="bg-accent text-white hover:bg-accent-600 transition-colors shadow-sm">
+                        <Plus className="w-4 h-4 mr-2" />
+                        New Program
+                    </Button>
+                </motion.div>
+
+                {loading ? (
+                    <motion.div key="loading" variants={itemVariants} className="flex flex-col items-center justify-center py-20">
+                        <div className="w-12 h-12 rounded-full border-4 border-gray-200 border-t-accent animate-spin mb-4" />
+                        <p className="text-text-tertiary">Fetching active programs...</p>
+                    </motion.div>
+                ) : (
+                    <motion.div key="content" variants={containerVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {programs.map((program) => (
+                            <motion.div variants={itemVariants} key={program.id}>
+                                <Card
+                                    className="p-6 bg-white border border-gray-200 hover:border-accent/40 hover:shadow-lg transition-all cursor-pointer group rounded-2xl h-full flex flex-col justify-between"
+                                    onClick={() => navigate(`/admin/programs/${program.id}`)}
+                                >
+                                    <div>
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div className="p-3 rounded-xl bg-accent/10 group-hover:bg-accent/20 transition-colors border border-accent/10">
+                                                <Briefcase className="w-6 h-6 text-accent" />
+                                            </div>
+                                            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${program.isActive ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-red-100 text-red-700 border border-red-200'}`}>
+                                                {program.isActive ? 'Active' : 'Inactive'}
+                                            </span>
+                                        </div>
+
+                                        <h3 className="text-xl font-bold text-gray-900 mb-3">{program.name}</h3>
+
+                                        <div className="space-y-3 text-sm text-gray-500 mb-4">
+                                            <div className="flex items-center">
+                                                <Calendar className="w-4 h-4 mr-2 text-gray-400" />
+                                                Started {new Date(program.startDate).toLocaleDateString()}
+                                            </div>
+                                            <div className="flex items-center">
+                                                <Users className="w-4 h-4 mr-2 text-gray-400" />
+                                                <span className="font-medium text-gray-700">{program._count?.students || 0}</span>&nbsp;Students Enrolled
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="pt-4 border-t border-gray-100">
+                                        <div className="text-xs font-medium text-accent">
+                                            {program._count?.assignments || 0} Total Assignments Dispatched
+                                        </div>
+                                    </div>
+                                </Card>
+                            </motion.div>
+                        ))}
+                    </motion.div>
+                )}
+
+                {/* Create Modal Implementation */}
+                {showCreateModal && (
+                    <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center z-50">
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            className="bg-white p-8 rounded-2xl border border-gray-200 shadow-2xl w-full max-w-md"
+                        >
+                            <h2 className="text-2xl font-bold text-gray-900 mb-6">Create New Data Group</h2>
+                            <form onSubmit={handleCreate} className="space-y-5">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Group Name / ID</label>
+                                    <input
+                                        type="text"
+                                        value={newProgramName}
+                                        onChange={(e) => setNewProgramName(e.target.value)}
+                                        className="w-full bg-gray-50 border border-gray-200 focus:border-accent focus:ring-1 focus:ring-accent rounded-xl p-3 text-gray-900 transition-colors outline-none"
+                                        placeholder="e.g. COLLEGE_2026"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Simulation Date</label>
+                                    <input
+                                        type="date"
+                                        value={startDate}
+                                        onChange={(e) => setStartDate(e.target.value)}
+                                        className="w-full bg-gray-50 border border-gray-200 focus:border-accent focus:ring-1 focus:ring-accent rounded-xl p-3 text-gray-900 transition-colors outline-none"
+                                        required
+                                    />
+                                </div>
+                                <div className="flex justify-end gap-3 mt-8 pt-4 border-t border-gray-100">
+                                    <Button type="button" variant="ghost" onClick={() => setShowCreateModal(false)} className="text-gray-600 hover:text-gray-900 hover:bg-gray-100">
+                                        Cancel
+                                    </Button>
+                                    <Button type="submit" className="bg-accent hover:bg-accent-600 text-white shadow-sm">
+                                        Create Group
+                                    </Button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+            </motion.div>
         </div>
     );
 };

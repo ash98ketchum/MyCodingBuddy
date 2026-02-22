@@ -49,6 +49,23 @@ class ApiService {
     );
   }
 
+  // Generic HTTP methods for direct API access
+  async get<T = any>(url: string, config?: any): Promise<T> {
+    return this.api.get<T, T>(url, config);
+  }
+
+  async post<T = any>(url: string, data?: any, config?: any): Promise<T> {
+    return this.api.post<T, T>(url, data, config);
+  }
+
+  async put<T = any>(url: string, data?: any, config?: any): Promise<T> {
+    return this.api.put<T, T>(url, data, config);
+  }
+
+  async delete<T = any>(url: string, config?: any): Promise<T> {
+    return this.api.delete<T, T>(url, config);
+  }
+
   // Auth
   async register(data: any) {
     return this.api.post('/auth/register', data);

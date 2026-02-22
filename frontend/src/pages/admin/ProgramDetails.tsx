@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'; // Assuming tabs component exists or use raw
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 import { Upload, Play, FileText, CheckCircle } from 'lucide-react';
 import { api } from '@/services/api';
 
@@ -25,8 +24,8 @@ const ProgramDetails = () => {
 
     const fetchDetails = async () => {
         try {
-            const res = await api.get(`/admin/programs/${id}`);
-            setProgram(res.data);
+            const res: any = await api.get(`/admin/programs/${id}`);
+            setProgram(res.data || res);
         } catch (error) {
             console.error('Failed to fetch program details');
         } finally {
@@ -36,8 +35,8 @@ const ProgramDetails = () => {
 
     const handleImport = async () => {
         try {
-            const res = await api.post(`/admin/programs/${id}/students`, { csvContent });
-            setImportStatus(res.data);
+            const res: any = await api.post(`/admin/programs/${id}/students`, { csvContent });
+            setImportStatus(res.data || res);
         } catch (error: any) {
             alert('Import failed: ' + error.message);
         }
@@ -61,8 +60,9 @@ const ProgramDetails = () => {
     const triggerAssignment = async () => {
         if (!confirm('Run daily assignment now?')) return;
         try {
-            const res = await api.post(`/admin/programs/${id}/assignment`);
-            alert(`Assignment Run: Assigned ${res.data.assigned} / ${res.data.totalStudents}`);
+            const res: any = await api.post(`/admin/programs/${id}/assignment`);
+            const data = res.data || res;
+            alert(`Assignment Run: Assigned ${data.assigned} / ${data.totalStudents}`);
         } catch (error: any) {
             alert('Error: ' + error.message);
         }
