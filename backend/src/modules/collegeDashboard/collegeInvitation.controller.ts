@@ -9,7 +9,7 @@ export const collegeInvitationController = {
      */
     async inviteStudents(req: Request, res: Response) {
         try {
-            const { collegeId } = req.params;
+            const collegeId = req.params.collegeId as string;
             const { emails } = req.body;
 
             if (!collegeId) {
@@ -39,7 +39,7 @@ export const collegeInvitationController = {
      */
     async getInvitations(req: Request, res: Response) {
         try {
-            const { collegeId } = req.params;
+            const collegeId = req.params.collegeId as string;
 
             if (!collegeId) {
                 throw new AppError('College ID is required', 400);
