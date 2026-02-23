@@ -1,0 +1,4 @@
+﻿src/components/SubmissionHistory.tsx(87,39): error TS18048: 'sub.memoryUsed' is possibly 'undefined'.
+src/pages/admin/reports/EODReportPage.tsx(18,23): error TS2503: Cannot find namespace 'NodeJS'.
+src/pages/ProblemsPage.tsx(209,93): error TS2339: Property 'split' does not exist on type 'never'.
+src/pages/ProblemsPage.tsx(209,125): error TS7006: Parameter 'tag' implicitly has an 'any' type.

@@ -15,7 +15,7 @@ export const EODReportPage: React.FC = () => {
     useEffect(() => {
         fetchStatus();
         // Poll status every 10 seconds if generating
-        let interval: NodeJS.Timeout;
+        let interval: ReturnType<typeof setInterval>;
         if (isGenerating) {
             interval = setInterval(fetchStatus, 10000);
         }

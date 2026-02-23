@@ -85,7 +85,7 @@ submissionQueue.process(3, async (job) => {
         testCasesPassed: passedTests,
         score,
         errorMessage: errorMessage || null,
-        testResults: JSON.stringify(testResults),
+        testResults: testResults as any,
       },
     });
 

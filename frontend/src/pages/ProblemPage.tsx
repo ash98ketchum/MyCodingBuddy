@@ -8,6 +8,8 @@ import api from '@/services/api';
 import toast from 'react-hot-toast';
 import { Clock, Database, CheckCircle, XCircle, Loader } from 'lucide-react';
 import { Badge } from '../components/ui';
+// Import SubmissionHistory
+import SubmissionHistory from '@/components/SubmissionHistory';
 
 export const ProblemPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -243,9 +245,16 @@ export const ProblemPage: React.FC = () => {
             )}
 
             {activeTab === 'submissions' && (
-              <div>
-                <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Your Submissions</h3>
-                <p className="text-gray-500">Submission history will appear here</p>
+              <div className="pt-4">
+                <SubmissionHistory
+                  problemId={problem.id}
+                  onViewDetail={(sub) => {
+                    // Update the editor code (if you have local state for it)
+                    // Currently Editor manages its own state, so we just set result
+                    setResult(sub);
+                    toast.success('Loaded past submission code and results');
+                  }}
+                />
               </div>
             )}
           </div>

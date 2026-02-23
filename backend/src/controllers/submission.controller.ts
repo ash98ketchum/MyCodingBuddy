@@ -169,6 +169,7 @@ export const getSubmissionStatus = async (req: Request, res: Response) => {
         totalTestCases: true,
         errorMessage: true,
         score: true,
+        testResults: true,
       },
     });
 
