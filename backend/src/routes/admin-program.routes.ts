@@ -17,6 +17,9 @@ router.get('/list', adminProgramController.getPrograms);
 // Create Program API
 router.post('/create', adminProgramController.createProgram);
 
+// Get Program Details API
+router.get('/details/:id', adminProgramController.getProgramDetails);
+
 // Student Verification API
 router.get('/students/verify', adminProgramController.verifyStudent);
 

@@ -161,6 +161,39 @@ export const adminProgramController = {
     },
 
     /**
+     * @route GET /api/admin/program/details/:id
+     * @desc Simulated endpoint to fetch details of a specific Program Data Group
+     */
+    getProgramDetails: async (req: Request, res: Response) => {
+        try {
+            const id = req.params.id as string;
+
+            // Get student count for this 'program'
+            const studentCount = await prisma.programStudent.count({
+                where: { programId: id }
+            });
+
+            // Reconstruct the data shape expected by the frontend
+            const reconstructedProgram = {
+                id,
+                name: id.replace(/_/g, ' '),
+                description: `Data group representing the ${id.replace(/_/g, ' ')} cohort.`,
+                startDate: new Date('2026-02-01T00:00:00Z').toISOString(), // Simulated
+                isActive: true,
+                createdAt: new Date().toISOString(),
+                _count: {
+                    students: studentCount,
+                    assignments: 0 // Fetch actual assignment count if needed later
+                }
+            };
+
+            res.json(reconstructedProgram);
+        } catch (error) {
+            throw new AppError('Failed to fetch program details', 500);
+        }
+    },
+
+    /**
      * @route GET /api/admin/program/students/verify
      * @desc Exact DB lookup for a student when Bloom filter says "probably exists"
      */

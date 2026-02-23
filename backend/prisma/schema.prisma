@@ -319,6 +319,7 @@ model College {
   assignments CollegeAssignment[]
   admins      CollegeAdmin[]
   problems    CollegeProblem[]
+  invitations CollegeInvitation[]
 }
 
 model CollegeAdmin {
@@ -433,4 +434,27 @@ model AIStudentReport {
   generatedAt      DateTime @default(now())
 
   student CollegeStudent @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model CollegeInvitation {
+  id        String           @id @default(cuid())
+  collegeId String
+  email     String
+  status    InvitationStatus @default(PENDING)
+  token     String           @unique
+  expiresAt DateTime
+  createdAt DateTime         @default(now())
+
+  college College @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+
+  @@index([collegeId])
+  @@index([email])
+  @@index([token])
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
 }

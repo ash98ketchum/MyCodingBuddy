@@ -24,7 +24,7 @@ const ProgramDetails = () => {
 
     const fetchDetails = async () => {
         try {
-            const res: any = await api.get(`/admin/programs/${id}`);
+            const res: any = await api.get(`/admin/program/details/${id}`);
             setProgram(res.data || res);
         } catch (error) {
             console.error('Failed to fetch program details');
@@ -78,16 +78,19 @@ const ProgramDetails = () => {
         }
     };
 
-    if (loading) return <div className="p-10 text-center">Loading...</div>;
-    if (!program) return <div className="p-10 text-center">Program not found</div>;
+    if (loading) return <div className="p-10 text-center flex items-center justify-center min-h-screen text-gray-500">Loading Program Data...</div>;
+    if (!program) return <div className="p-10 text-center flex items-center justify-center min-h-screen text-red-500 font-bold">Program not found</div>;
+
+    const studentCount = program?.students?.length || program?._count?.students || 0;
+    const poolCount = program?.problemPool?.length || program?._count?.assignments || 0;
 
     return (
-        <div className="p-6 space-y-6">
-            <div className="flex justify-between items-center bg-gray-900 p-6 rounded-lg border border-gray-800">
+        <div className="p-6 space-y-6 max-w-7xl mx-auto">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
                 <div>
-                    <h1 className="text-2xl font-bold text-white">{program.name}</h1>
-                    <p className="text-gray-400">
-                        Students: {program.students.length} | Pool: {program.problemPool.length}
+                    <h1 className="text-2xl font-bold text-gray-900">{program.name}</h1>
+                    <p className="text-gray-500 mt-1 font-medium">
+                        Students: {studentCount} | Pool: {poolCount}
                     </p>
                 </div>
                 <div className="flex gap-3">

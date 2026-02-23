@@ -19,6 +19,7 @@ import ProgramDetails from './pages/admin/ProgramDetails';
 import DiscussPage from './pages/DiscussPage';
 import DiscussionDetailPage from './pages/DiscussionDetailPage';
 import AboutPage from './pages/AboutPage';
+import OptOutPage from './pages/OptOutPage';
 
 // Admin Auth
 import AdminLoginPage from './pages/admin/AdminLoginPage';

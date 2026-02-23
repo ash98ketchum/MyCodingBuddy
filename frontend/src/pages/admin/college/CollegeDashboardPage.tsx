@@ -7,6 +7,7 @@ import { CollegeIntegrityPanel } from '../../../components/admin/college/College
 import { CollegeStudentSegmentation } from '../../../components/admin/college/CollegeStudentSegmentation';
 import { CollegeProblemAnalytics } from '../../../components/admin/college/CollegeProblemAnalytics';
 import { CollegeLeaderboardTable } from '../../../components/admin/college/CollegeLeaderboardTable';
+import { CollegeInvitationsList } from '../../../components/admin/college/CollegeInvitationsList';
 import { Download, RefreshCw, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -86,6 +87,9 @@ const CollegeDashboardPage: React.FC = () => {
             <CollegeProblemAnalytics />
 
             <CollegeLeaderboardTable />
+
+            {/* Student Invitations Panel */}
+            {collegeId && <CollegeInvitationsList collegeId={collegeId} />}
 
         </motion.div>
     );
