@@ -14,6 +14,9 @@ router.get('/bloom', adminProgramController.getBloomFilter);
 // List Programs API
 router.get('/list', adminProgramController.getPrograms);
 
+// Create Program API
+router.post('/create', adminProgramController.createProgram);
+
 // Student Verification API
 router.get('/students/verify', adminProgramController.verifyStudent);
 

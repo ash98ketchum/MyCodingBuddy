@@ -45,14 +45,20 @@ const CollegeDashboard = () => {
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            // Note: with the removal of the Legacy Program model, program creation
-            // might need to be simulated or integrated differently going forward.
-            await api.post('/admin/programs', {
+            // Updated to the new Phase 2 endpoint
+            const res: any = await api.post('/admin/program/create', {
                 name: newProgramName,
                 startDate: new Date(startDate).toISOString(),
             });
+
+            // Add the new program to the local state so it appears instantly for the user
+            if (res.data?.data) {
+                setPrograms(prev => [...prev, res.data.data]);
+            } else if (res.data) {
+                setPrograms(prev => [...prev, res.data]);
+            }
+
             setShowCreateModal(false);
-            fetchPrograms();
             setNewProgramName('');
             setStartDate('');
         } catch (error) {

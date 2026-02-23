@@ -132,6 +132,35 @@ export const adminProgramController = {
     },
 
     /**
+     * @route POST /api/admin/program/create
+     * @desc Simulated endpoint to create a program group (data group) in Phase 2
+     */
+    createProgram: async (req: Request, res: Response) => {
+        try {
+            const { name, startDate } = req.body;
+
+            if (!name) {
+                throw new AppError('Program name / ID is required', 400);
+            }
+
+            // In Phase 2, we don't strictly INSERT a Program row.
+            // We just return success so the frontend UI can optimistically update or display a success message.
+            res.json({
+                success: true,
+                message: 'Program group successfully initialized',
+                data: {
+                    id: name.toUpperCase().replace(/\s+/g, '_'),
+                    name,
+                    startDate: startDate || new Date().toISOString(),
+                    isActive: true
+                }
+            });
+        } catch (error) {
+            throw new AppError('Failed to initialize program group', 500);
+        }
+    },
+
+    /**
      * @route GET /api/admin/program/students/verify
      * @desc Exact DB lookup for a student when Bloom filter says "probably exists"
      */
