@@ -11,6 +11,7 @@ interface SubmissionJob {
   testCases: any[];
   timeLimit: number;
   memoryLimit: number;
+  sampleOnly?: boolean;
 }
 
 // Mock Queue for local development without Redis
@@ -55,22 +56,18 @@ class MockQueue {
   }
 }
 
-const shouldUseMock = process.env.Node_ENV !== 'production' && (process.env.USE_MOCK_QUEUE === 'true' || !process.env.REDIS_URL || process.env.REDIS_URL.includes('localhost'));
+// MockQueue is ONLY used when Redis is explicitly disabled.
+// Real Redis-backed queue is used in all other cases (including local dev with REDIS_URL=redis://localhost:6379).
+const shouldUseMock = process.env.REDIS_DISABLED === 'true';
+
+const bullRedisOpts = config.redis.url.startsWith('rediss://')
+  ? { url: config.redis.url, tls: { rejectUnauthorized: false } }
+  : config.redis.url; // ioredis parses host/port/db from the URL string
 
 export const submissionQueue = shouldUseMock
   ? (new MockQueue('code-submissions', {}) as any)
   : new Queue<SubmissionJob>('code-submissions', {
-    redis: {
-      port: config.redis.url.includes('localhost') ? 6379 : undefined,
-      ...((config.redis.url.startsWith('rediss://') ? {
-        url: config.redis.url,
-        tls: {
-          rejectUnauthorized: false
-        }
-      } : {
-        url: config.redis.url
-      }))
-    },
+    redis: bullRedisOpts as any,
     defaultJobOptions: {
       attempts: 3,
       backoff: {
@@ -106,3 +103,26 @@ submissionQueue.on('failed', (job, err) => {
 submissionQueue.on('stalled', (job) => {
   console.warn(`⚠️  Job ${job.id} stalled`);
 });
+
+export interface ResultCheckJob {
+  submissionId: string;
+  tokens: string[];
+  originalJobData: SubmissionJob;
+  startTime: number;
+}
+
+export const resultCheckQueue = shouldUseMock
+  ? (new MockQueue('result-check', {}) as any)
+  : new Queue<ResultCheckJob>('result-check', {
+    redis: bullRedisOpts as any,
+    defaultJobOptions: {
+      attempts: 20, // Check up to 20 times
+      backoff: {
+        type: 'fixed',
+        delay: 1500, // 1.5s between checks
+      },
+      removeOnComplete: true,
+      removeOnFail: false,
+    },
+  });
+

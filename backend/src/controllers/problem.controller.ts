@@ -2,6 +2,7 @@
 import { Request, Response } from 'express';
 import prisma from '@/config/database';
 import { AppError } from '@/middleware/error';
+import { problemLoader } from '@/services/problemLoader.service';
 
 export const getProblems = async (req: Request, res: Response) => {
   try {
@@ -78,15 +79,6 @@ export const getProblem = async (req: Request, res: Response) => {
     const problem = await prisma.problem.findUnique({
       where: { slug: slug as string },
       include: {
-        testCases: {
-          where: { isSample: true },
-          select: {
-            id: true,
-            input: true,
-            expectedOutput: true,
-            isSample: true,
-          },
-        },
         createdBy: {
           select: {
             id: true,
@@ -100,9 +92,31 @@ export const getProblem = async (req: Request, res: Response) => {
       throw new AppError('Problem not found', 404);
     }
 
+    // Connect with File-based System
+    const problemSlug = slug as string;
+    const fileMeta = problemLoader.getProblemMeta(problemSlug);
+    const fileSampleCases = problemLoader.getSampleTestCases(problemSlug);
+
+    if (fileMeta) {
+      problem.title = fileMeta.title;
+      problem.description = fileMeta.description;
+      problem.constraints = fileMeta.constraints;
+    }
+
+    // Merge sample test cases
+    const mergedData = {
+      ...problem,
+      testCases: fileSampleCases.map((tc, idx) => ({
+        id: `file-sample-${idx}`,
+        input: tc.input,
+        expectedOutput: tc.expectedOutput,
+        isSample: true,
+      })),
+    };
+
     res.json({
       success: true,
-      data: problem,
+      data: mergedData,
     });
   } catch (error) {
     throw error;

@@ -1,8 +1,24 @@
 // frontend/src/services/api.ts
-import axios, { AxiosInstance, AxiosError } from 'axios';
+import axios, { AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios';
 import toast from 'react-hot-toast';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+/** In-flight GET request deduplication cache */
+const inFlightRequests = new Map<string, Promise<any>>();
+
+/** Exponential backoff retry for 429 responses */
+const retryWithBackoff = async (fn: () => Promise<any>, retries = 3, delay = 500): Promise<any> => {
+  try {
+    return await fn();
+  } catch (err: any) {
+    if (retries > 0 && err?.response?.status === 429) {
+      await new Promise((res) => setTimeout(res, delay));
+      return retryWithBackoff(fn, retries - 1, delay * 2);
+    }
+    throw err;
+  }
+};
 
 class ApiService {
   private api: AxiosInstance;
@@ -24,23 +40,37 @@ class ApiService {
         }
         return config;
       },
-      (error) => {
-        return Promise.reject(error);
-      }
+      (error) => Promise.reject(error)
     );
 
     // Response interceptor
     this.api.interceptors.response.use(
       (response) => response.data,
       (error: AxiosError<any>) => {
+        const status = error.response?.status;
         const message = error.response?.data?.message || 'Something went wrong';
 
-        if (error.response?.status === 401) {
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          window.location.href = '/login';
-          toast.error('Session expired. Please login again.');
-        } else {
+        if (status === 401) {
+          // Only hard-redirect to login if we are NOT on an admin route
+          const isAdminRoute = window.location.pathname.startsWith('/admin');
+          if (!isAdminRoute) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            // Use replace to avoid polluting browser history
+            window.location.replace('/login');
+            toast.error('Session expired. Please login again.');
+          }
+        } else if (status === 429) {
+          // Silently handle 429 — retryWithBackoff will catch this upstream;
+          // only show toast if it's a mutation (non-GET)
+          const method = error.config?.method?.toUpperCase();
+          if (method && method !== 'GET') {
+            toast.error('Too many requests. Please wait a moment and try again.');
+          }
+        } else if (status && status >= 500) {
+          toast.error('Server error. Please try again later.');
+        } else if (status !== 404) {
+          // Suppress 404s from polluting toasts — callers handle those
           toast.error(message);
         }
 
@@ -49,20 +79,31 @@ class ApiService {
     );
   }
 
-  // Generic HTTP methods for direct API access
-  async get<T = any>(url: string, config?: any): Promise<T> {
-    return this.api.get<T, T>(url, config);
+  /**
+   * Deduplicated GET — if the same URL is already in flight, reuse the
+   * existing Promise instead of firing a second request.
+   */
+  async get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    const cacheKey = url + JSON.stringify(config?.params ?? {});
+    if (inFlightRequests.has(cacheKey)) {
+      return inFlightRequests.get(cacheKey) as Promise<T>;
+    }
+    const promise = retryWithBackoff(() => this.api.get<T, T>(url, config)).finally(() => {
+      inFlightRequests.delete(cacheKey);
+    });
+    inFlightRequests.set(cacheKey, promise);
+    return promise;
   }
 
-  async post<T = any>(url: string, data?: any, config?: any): Promise<T> {
+  async post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
     return this.api.post<T, T>(url, data, config);
   }
 
-  async put<T = any>(url: string, data?: any, config?: any): Promise<T> {
+  async put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
     return this.api.put<T, T>(url, data, config);
   }
 
-  async delete<T = any>(url: string, config?: any): Promise<T> {
+  async delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
     return this.api.delete<T, T>(url, config);
   }
 
@@ -76,7 +117,7 @@ class ApiService {
   }
 
   async getProfile() {
-    return this.api.get('/auth/profile');
+    return this.get('/auth/profile');
   }
 
   async updateProfile(data: any) {
@@ -85,11 +126,11 @@ class ApiService {
 
   // Problems
   async getProblems(params?: any) {
-    return this.api.get('/problems', { params });
+    return this.get('/problems', { params });
   }
 
   async getProblem(slug: string) {
-    return this.api.get(`/problems/${slug}`);
+    return this.get(`/problems/${slug}`);
   }
 
   async createProblem(data: any) {
@@ -105,11 +146,11 @@ class ApiService {
   }
 
   async getProblemStats() {
-    return this.api.get('/problems/stats');
+    return this.get('/problems/stats');
   }
 
   async getGlobalStats() {
-    return this.api.get('/problems/global-stats');
+    return this.get('/problems/global-stats');
   }
 
   // Discussion Module APIs
@@ -120,11 +161,11 @@ class ApiService {
     tags?: string;
     sort?: 'recent' | 'popular' | 'unanswered';
   }) {
-    return this.api.get('/discussions', { params });
+    return this.get('/discussions', { params });
   }
 
   async getDiscussionById(id: string) {
-    return this.api.get(`/discussions/${id}`);
+    return this.get(`/discussions/${id}`);
   }
 
   async createDiscussion(data: {
@@ -169,7 +210,7 @@ class ApiService {
   }
 
   async getReactions(params: { discussionId?: string; commentId?: string }) {
-    return this.api.get('/reactions', { params });
+    return this.get('/reactions', { params });
   }
 
   async vote(data: { type: 'UP' | 'DOWN'; discussionId?: string; commentId?: string }) {
@@ -186,28 +227,29 @@ class ApiService {
   }
 
   async getSubmission(id: string) {
-    return this.api.get(`/submissions/${id}`);
+    return this.get(`/submissions/${id}`);
   }
 
   async getUserSubmissions(params?: any) {
-    return this.api.get('/submissions/my', { params });
+    return this.get('/submissions/my', { params });
   }
 
   async getSubmissionStatus(id: string) {
+    // Submission status polling — NOT deduplicated intentionally (each poll is unique)
     return this.api.get(`/submissions/${id}/status`);
   }
 
   async getLeaderboard(params?: any) {
-    return this.api.get('/submissions/leaderboard', { params });
+    return this.get('/submissions/leaderboard', { params });
   }
 
   // Admin
   async getDashboardStats() {
-    return this.api.get('/admin/dashboard');
+    return this.get('/admin/dashboard');
   }
 
   async getAllUsers(params?: any) {
-    return this.api.get('/admin/users', { params });
+    return this.get('/admin/users', { params });
   }
 
   async updateUser(id: string, data: any) {
@@ -219,7 +261,7 @@ class ApiService {
   }
 
   async getAllSubmissions(params?: any) {
-    return this.api.get('/admin/submissions', { params });
+    return this.get('/admin/submissions', { params });
   }
 
   async createAdminUser(data: any) {
@@ -227,7 +269,7 @@ class ApiService {
   }
 
   async getSystemHealth() {
-    return this.api.get('/admin/health');
+    return this.get('/admin/health');
   }
 }
 

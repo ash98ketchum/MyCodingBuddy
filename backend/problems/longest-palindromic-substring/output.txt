@@ -1,0 +1,17 @@
+bb
+[[[CASE_SEPARATOR]]]
+a
+[[[CASE_SEPARATOR]]]
+a
+[[[CASE_SEPARATOR]]]
+racecar
+[[[CASE_SEPARATOR]]]
+noon
+[[[CASE_SEPARATOR]]]
+a
+[[[CASE_SEPARATOR]]]
+aaaa
+[[[CASE_SEPARATOR]]]
+anana
+[[[CASE_SEPARATOR]]]
+ranynar

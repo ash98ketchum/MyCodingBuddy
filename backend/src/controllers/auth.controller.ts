@@ -69,6 +69,9 @@ export const login = async (req: Request, res: Response) => {
     // Find user
     const user = await prisma.user.findUnique({
       where: { email },
+      include: {
+        collegeAdmin: true
+      }
     });
 
     if (!user) {
@@ -87,6 +90,7 @@ export const login = async (req: Request, res: Response) => {
       userId: user.id,
       email: user.email,
       role: user.role,
+      collegeId: user.collegeAdmin?.collegeId || undefined,
     });
 
     res.json({

@@ -260,6 +260,23 @@
 
 ---
 
+## 🚀 Running Locally (with Async Judge0)
+
+To spin up the self-hosted Judge0 execution cluster along with its Redis queue and PostgreSQL database natively on your machine:
+
+1. Ensure **Docker Desktop** or your preferred Docker engine is running.
+2. Open your terminal at the root of the project (`MyCodingBuddy`).
+3. Run the following command to start the execution pipeline in detached mode:
+   ```bash
+   docker compose up -d judge0-postgres judge0-redis judge0-server judge0-worker
+   ```
+4. Start your local backend development server:
+   ```bash
+   cd backend
+   npm run dev
+   ```
+5. Your API will seamlessly dispatch code executions to `http://localhost:2358` and broadcast real-time WebSockets to the frontend.
+
 ## 📦 Deployment Options
 
 ### 1. Render (Recommended)

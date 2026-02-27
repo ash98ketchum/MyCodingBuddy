@@ -15,17 +15,24 @@ const ProblemsPage = () => {
   const [sortBy, setSortBy] = useState<'title' | 'difficulty' | 'acceptance'>('title');
 
   useEffect(() => {
-    loadProblems();
-  }, []);
+    let cancelled = false;
 
-  const loadProblems = async () => {
-    try {
-      const response = await api.getProblems();
-      setProblems(response.data.problems);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const loadProblems = async () => {
+      try {
+        const response = await api.getProblems();
+        if (!cancelled) {
+          setProblems(response.data.problems);
+        }
+      } catch (error) {
+        if (!cancelled) console.error('Failed to load problems:', error);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    loadProblems();
+    return () => { cancelled = true; };
+  }, []);
 
   // Filter and sort problems
   const filteredProblems = problems

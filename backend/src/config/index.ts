@@ -22,7 +22,13 @@ export const config = {
   },
 
   cors: {
-    origin: [process.env.FRONTEND_URL || 'http://localhost:5173', 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'],
+    origin: [
+      process.env.FRONTEND_URL || 'http://localhost:5173',
+      // Only include localhost origins in development
+      ...(process.env.NODE_ENV !== 'production'
+        ? ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175']
+        : []),
+    ],
     credentials: true,
   },
 
@@ -35,7 +41,7 @@ export const config = {
     maxExecutionTime: parseInt(process.env.MAX_EXECUTION_TIME || '5000', 10),
     maxMemoryLimit: parseInt(process.env.MAX_MEMORY_LIMIT || '512', 10),
     workers: parseInt(process.env.JUDGE_WORKERS || '3', 10),
-    apiUrl: process.env.JUDGE0_API_URL || 'https://judge0-ce.p.rapidapi.com',
+    apiUrl: process.env.JUDGE0_URL || 'http://localhost:2358',
     apiKey: process.env.JUDGE0_API_KEY,
   },
 
@@ -47,3 +53,16 @@ export const config = {
   isDevelopment: process.env.NODE_ENV === 'development',
   isProduction: process.env.NODE_ENV === 'production',
 };
+
+// ── Production safety guards ──────────────────────────────────────────────────
+if (config.isProduction) {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('FATAL: JWT_SECRET must be set in production');
+  }
+  if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD) {
+    console.warn('⚠️  ADMIN_EMAIL / ADMIN_PASSWORD not set — using insecure defaults');
+  }
+  if (!process.env.DATABASE_URL) {
+    throw new Error('FATAL: DATABASE_URL must be set in production');
+  }
+}

@@ -1,7 +1,7 @@
 // frontend/src/store/index.ts
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { User } from '@/types';
+import { User, Submission } from '@/types';
 
 interface AuthState {
   user: User | null;
@@ -71,6 +71,54 @@ export const useEditorStore = create<EditorState>()(
     }),
     {
       name: 'editor-storage',
+    }
+  )
+);
+
+// ── Problem workspace store ───────────────────────────────────────────────────
+type LeftTab = 'description' | 'submissions' | 'results';
+
+interface ProblemState {
+  // Code persisted per "slug:language" key
+  codeMap: Record<string, string>;
+  setCodeForKey: (key: string, code: string) => void;
+  getCodeForKey: (key: string) => string;
+
+  activeLeftTab: LeftTab;
+  setActiveLeftTab: (tab: LeftTab) => void;
+
+  latestResult: Submission | null;
+  setLatestResult: (result: Submission | null) => void;
+
+  // Width of the left panel (% of total)
+  leftPanelWidth: number;
+  setLeftPanelWidth: (w: number) => void;
+}
+
+export const useProblemStore = create<ProblemState>()(
+  persist(
+    (set, get) => ({
+      codeMap: {},
+      setCodeForKey: (key, code) =>
+        set((s) => ({ codeMap: { ...s.codeMap, [key]: code } })),
+      getCodeForKey: (key) => get().codeMap[key] ?? '',
+
+      activeLeftTab: 'description',
+      setActiveLeftTab: (tab) => set({ activeLeftTab: tab }),
+
+      latestResult: null,
+      setLatestResult: (result) => set({ latestResult: result }),
+
+      leftPanelWidth: 42,
+      setLeftPanelWidth: (w) => set({ leftPanelWidth: w }),
+    }),
+    {
+      name: 'problem-workspace',
+      // Only persist layout + code, NOT transient result
+      partialize: (s) => ({
+        codeMap: s.codeMap,
+        leftPanelWidth: s.leftPanelWidth,
+      }),
     }
   )
 );

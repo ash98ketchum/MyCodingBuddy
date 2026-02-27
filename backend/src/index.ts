@@ -4,22 +4,27 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
-import rateLimit from 'express-rate-limit';
+import { createServer } from 'http';
+import { authLimiter, submissionLimiter, publicLimiter, defaultLimiter } from './middleware/rateLimiter';
 import { config } from './config';
 import prisma from './config/database';
 import redis from './config/redis';
 import { errorHandler, notFound } from './middleware/error';
+import { initSocket } from './socket';
 
 // Routes
 import authRoutes from './routes/auth.routes';
 import problemRoutes from './routes/problem.routes';
 import submissionRoutes from './routes/submission.routes';
 import adminRoutes from './routes/admin.routes';
-// import programRoutes from './routes/admin.program.routes';
 import adminProgramAssignRoutes from './routes/admin-program.routes';
 import discussionRoutes from './routes/discussion.routes';
 import eodReportsRoutes from './modules/eodReports/eodReports.routes';
+import collegeDashboardRoutes from './modules/collegeDashboard/collegeDashboard.routes';
 import { initEODScheduler } from './modules/eodReports/scheduler';
+import { problemLoader } from './services/problemLoader.service';
+import { judge0Client } from './services/judge0Client.service';
+import { collegeRateLimiter } from './middleware/collegeRateLimit';
 
 const app = express();
 
@@ -29,20 +34,6 @@ app.set('trust proxy', 1);
 // Security middleware
 app.use(helmet());
 app.use(cors(config.cors));
-
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: config.rateLimit.windowMs,
-  max: config.rateLimit.maxRequests,
-  message: 'Too many requests from this IP, please try again later.',
-  standardHeaders: true,
-  legacyHeaders: false,
-  validate: {
-    xForwardedForHeader: false,
-  },
-});
-
-app.use('/api', limiter);
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
@@ -58,27 +49,20 @@ if (config.isDevelopment) {
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Server is running',
-    timestamp: new Date(),
-  });
+  res.json({ success: true, message: 'Server is running', timestamp: new Date() });
 });
 
-import collegeDashboardRoutes from './modules/collegeDashboard/collegeDashboard.routes';
+// API Routes — tiered rate limiting
+app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/problems', publicLimiter, problemRoutes);
+app.use('/api/submissions', submissionLimiter, submissionRoutes);
+app.use('/api/admin', defaultLimiter, adminRoutes);
+app.use('/api/admin/program', defaultLimiter, adminProgramAssignRoutes);
+app.use('/api/admin/reports/eod', defaultLimiter, eodReportsRoutes);
+app.use('/api/admin/college', collegeRateLimiter, collegeDashboardRoutes);
+app.use('/api', publicLimiter, discussionRoutes);
 
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/problems', problemRoutes);
-app.use('/api/submissions', submissionRoutes);
-app.use('/api/admin', adminRoutes);
-// app.use('/api/admin/programs', programRoutes);
-app.use('/api/admin/program', adminProgramAssignRoutes);
-app.use('/api/admin/reports/eod', eodReportsRoutes);
-app.use('/api/admin/college', collegeDashboardRoutes); // NEW ROUTE
-app.use('/api', discussionRoutes); // Discussion routes
-
-// Initialize EOD Schedulers
+// Initialize EOD Scheduler
 initEODScheduler();
 
 // Error handling
@@ -93,30 +77,62 @@ process.on('SIGTERM', async () => {
   process.exit(0);
 });
 
+// ── HTTP Server + WebSocket ───────────────────────────────────────────────────
 const PORT = config.port;
+const httpServer = createServer(app);
+initSocket(httpServer, config.cors);
 
-app.listen(PORT, async () => {
+httpServer.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📝 Environment: ${config.nodeEnv}`);
   console.log(`🔗 API: http://localhost:${PORT}/api`);
+  console.log(`🔌 WebSocket Server initialized`);
 
-  // Test database connection
   try {
-    await prisma.$connect();
+    // 0. Problem Loader (file-based test cases)
+    problemLoader.initialize();
+
+    // 1. Database
+    console.log('⏳ Connecting to database...');
+    await Promise.race([
+      prisma.$connect(),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Database connection timeout')), 15_000)
+      ),
+    ]);
     console.log('✅ Database connected');
 
-    // Start worker in the same process for local development (Mock Queue support)
-    // This allows testing code execution without a separate Redis/Worker process
-    if (!process.env.REDIS_URL || process.env.REDIS_URL.includes('localhost')) {
-      console.log('👷 Starting worker in the same process for local development...');
-      await import('./worker/index');
+    // 2. Judge0 Health Check — NON-FATAL: server boots even if Judge0 is down
+    const judge0Url = process.env.JUDGE0_URL || config.judge.apiUrl;
+    console.log(`⏳ Checking Judge0 at ${judge0Url} ...`);
+    try {
+      const healthy = await judge0Client.isHealthy();
+      if (healthy) {
+        console.log(`✅ Judge0 connected (${judge0Url})`);
+      } else {
+        console.warn(`⚠️  Judge0 unavailable at ${judge0Url} — submissions will fail until Judge0 is running`);
+        console.warn(`   → docker compose up -d judge0-server judge0-worker judge0-postgres judge0-redis`);
+      }
+    } catch (j0Err: any) {
+      console.warn(`⚠️  Judge0 health check error: ${j0Err?.message}`);
     }
 
-    // Initialize Cron Jobs
+    // 3. Worker (in-process in dev; external process in production)
+    const runWorkerInProcess =
+      config.isDevelopment || process.env.WORKER_IN_PROCESS === 'true';
+    if (runWorkerInProcess) {
+      console.log('👷 Starting submission worker in-process...');
+      await import('./workers/submission.worker');
+    }
+
+    // 4. Cron Jobs
+    console.log('⏰ Initializing cron jobs...');
     await import('./cron').then(m => m.initCronJobs());
 
+    console.log('✨ Server initialization complete');
   } catch (error) {
-    console.error('❌ Database connection failed:', error);
+    console.error('❌ Server partial initialization failure:', error);
+    console.error('⚠️  The server is running but some background services may be unavailable.');
   }
 });
 

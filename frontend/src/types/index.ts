@@ -82,6 +82,7 @@ export interface Submission {
 export type Language = 'JAVASCRIPT' | 'PYTHON' | 'JAVA' | 'CPP' | 'C';
 
 export type Verdict =
+  | 'QUEUED'
   | 'PENDING'
   | 'ACCEPTED'
   | 'WRONG_ANSWER'

@@ -1,4 +1,4 @@
-// @ts-nocheck
+// backend/src/controllers/discussion.controller.ts
 // backend/src/controllers/discussion.controller.ts
 import { Response } from 'express';
 import { AuthRequest } from '@/middleware/auth';
@@ -93,7 +93,6 @@ export const getDiscussions = async (req: AuthRequest, res: Response) => {
                 _count: {
                     select: {
                         comments: true,
-                        reactions: true,
                     },
                 },
             },
@@ -177,7 +176,6 @@ export const getDiscussionById = async (req: AuthRequest, res: Response) => {
                                     },
                                 },
                             },
-                            votes: true,
                         },
                     },
                     reactions: {
@@ -190,7 +188,6 @@ export const getDiscussionById = async (req: AuthRequest, res: Response) => {
                             },
                         },
                     },
-                    votes: true,
                 },
                 orderBy: [
                     { isAccepted: 'desc' },

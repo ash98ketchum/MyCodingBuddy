@@ -8,6 +8,11 @@ const isTls = redisUrl.startsWith('rediss://');
 const redisOptions = {
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
+  connectTimeout: 10000, // 10s timeout
+  retryStrategy(times: number) {
+    const delay = Math.min(times * 50, 2000);
+    return delay;
+  },
   ...(isTls ? {
     tls: {
       rejectUnauthorized: false,

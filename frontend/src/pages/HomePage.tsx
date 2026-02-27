@@ -17,23 +17,26 @@ const HomePage = () => {
   });
 
   React.useEffect(() => {
+    // Guard against React 18 StrictMode double-invocation
+    let cancelled = false;
+
     const fetchStats = async () => {
       try {
-        // Dynamic import to avoid circular dependencies if any, 
-        // though strictly not needed here, good practice in some architectures.
-        // But here we just import api directly at top level usually.
-        // Let's use the imported api from services.
         const { api } = await import('../services/api');
         const response: any = await api.getGlobalStats();
-        if (response.success) {
+        if (!cancelled && response.success) {
           setStatsData(response.data);
         }
       } catch (error) {
-        console.error('Failed to fetch global stats:', error);
+        if (!cancelled) {
+          console.error('Failed to fetch global stats:', error);
+        }
       }
     };
 
     fetchStats();
+
+    return () => { cancelled = true; };
   }, []);
 
   const stats = [

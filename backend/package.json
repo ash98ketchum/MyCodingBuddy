@@ -12,10 +12,15 @@
     "prisma:push": "prisma db push",
     "prisma:studio": "prisma studio",
     "seed:problems": "tsx prisma/seed-problems.ts",
-    "worker": "tsx src/worker/index.ts"
+    "migrate:problems": "tsx scripts/migrate-to-files.ts",
+    "judge:self-test": "tsx scripts/judge-self-test.ts",
+    "judge:test": "tsx scripts/judge-self-test.ts",
+    "worker": "tsx src/workers/submission.worker.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.11.0",
+    "@socket.io/redis-adapter": "^8.3.0",
+    "@socket.io/redis-emitter": "^5.1.0",
     "@types/express": "^5.0.6",
     "@types/node": "^25.2.3",
     "axios": "^1.13.5",
@@ -34,6 +39,7 @@
     "morgan": "^1.10.0",
     "node-cron": "^4.2.1",
     "nodemailer": "^8.0.1",
+    "socket.io": "^4.8.3",
     "tsc-alias": "^1.8.16",
     "zod": "^3.22.4"
   },

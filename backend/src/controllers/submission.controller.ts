@@ -3,10 +3,22 @@ import { Request, Response } from 'express';
 import prisma from '@/config/database';
 import { AppError } from '@/middleware/error';
 import { addSubmissionToQueue } from '@/services/judge.service';
+import { z } from 'zod';
+
+const submissionSchema = z.object({
+  problemId: z.string().cuid('Invalid problem ID'),
+  code: z.string().min(1, 'Code cannot be empty').max(65536, 'Code exceeds 64KB limit'),
+  language: z.enum(['CPP', 'C', 'JAVA', 'PYTHON', 'JAVASCRIPT'], { required_error: 'Invalid language' }),
+  sampleOnly: z.boolean().optional().default(false),
+});
 
 export const submitCode = async (req: any, res: Response) => {
   try {
-    const { problemId, code, language } = req.body;
+    const validationResult = submissionSchema.safeParse(req.body);
+    if (!validationResult.success) {
+      throw new AppError(validationResult.error.errors[0].message, 400);
+    }
+    const { problemId, code, language, sampleOnly } = validationResult.data;
     const userId = req.user.userId;
 
     // Check if problem exists
@@ -21,6 +33,11 @@ export const submitCode = async (req: any, res: Response) => {
       throw new AppError('Problem not found', 404);
     }
 
+    // When running sample tests only, filter to isSample === true test cases
+    const testCasesToUse = sampleOnly
+      ? problem.testCases.filter((tc) => tc.isSample)
+      : problem.testCases;
+
     // Create submission
     const submission = await prisma.submission.create({
       data: {
@@ -28,8 +45,8 @@ export const submitCode = async (req: any, res: Response) => {
         problemId,
         code,
         language,
-        verdict: 'PENDING',
-        totalTestCases: problem.testCases.length,
+        verdict: 'QUEUED',
+        totalTestCases: testCasesToUse.length,
       },
     });
 
@@ -39,9 +56,10 @@ export const submitCode = async (req: any, res: Response) => {
       problemId: problem.id,
       code,
       language,
-      testCases: problem.testCases,
+      testCases: testCasesToUse,
       timeLimit: problem.timeLimit,
       memoryLimit: problem.memoryLimit,
+      sampleOnly: sampleOnly ?? false,
     });
 
     res.status(201).json({
@@ -49,7 +67,7 @@ export const submitCode = async (req: any, res: Response) => {
       message: 'Code submitted successfully',
       data: {
         submissionId: submission.id,
-        status: 'PENDING',
+        status: 'QUEUED',
       },
     });
   } catch (error) {
