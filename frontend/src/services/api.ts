@@ -271,6 +271,14 @@ class ApiService {
   async getSystemHealth() {
     return this.get('/admin/health');
   }
+
+  async getAllSubscriptions(): Promise<any> {
+    return this.get('/admin/subscriptions');
+  }
+
+  async updateSubscription(id: string, data: any): Promise<any> {
+    return this.api.put(`/admin/subscriptions/${id}`, data);
+  }
 }
 
 export const api = new ApiService();

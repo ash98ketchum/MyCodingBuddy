@@ -128,15 +128,22 @@ export const EODReportPage: React.FC = () => {
                                     try {
                                         const adminStorage = localStorage.getItem('admin-storage');
                                         let token = '';
+                                        let adminCollegeId = '';
                                         if (adminStorage) {
                                             const parsed = JSON.parse(adminStorage);
                                             token = parsed.state?.token;
+                                            adminCollegeId = parsed.state?.activeCollegeId || '';
                                         }
 
                                         // @ts-ignore: Vite env var
                                         const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-                                        const res = await fetch(`${baseURL}/admin/reports/eod/download`, {
+                                        let downloadUrl = `${baseURL}/admin/reports/eod/download`;
+                                        if (adminCollegeId) {
+                                            downloadUrl += `?collegeId=${adminCollegeId}`;
+                                        }
+
+                                        const res = await fetch(downloadUrl, {
                                             method: 'GET',
                                             headers: {
                                                 'Authorization': `Bearer ${token}`

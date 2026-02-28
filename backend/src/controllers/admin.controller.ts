@@ -12,13 +12,17 @@ export const getDashboardStats = async (req: Request, res: Response) => {
       totalSubmissions,
       totalContests,
       premiumUsers,
+      totalColleges,
       recentSubmissions,
+      recentColleges,
+      recentUsers,
     ] = await Promise.all([
       prisma.user.count(),
       prisma.problem.count(),
       prisma.submission.count(),
       prisma.contest.count(),
       prisma.user.count({ where: { isPremium: true } }),
+      prisma.college.count(),
       prisma.submission.findMany({
         take: 10,
         orderBy: { createdAt: 'desc' },
@@ -30,6 +34,16 @@ export const getDashboardStats = async (req: Request, res: Response) => {
             select: { title: true },
           },
         },
+      }),
+      prisma.college.findMany({
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, name: true, domain: true, subscriptionPlan: true, isActive: true, createdAt: true },
+      }),
+      prisma.user.findMany({
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, username: true, email: true, planType: true, createdAt: true },
       }),
     ]);
 
@@ -60,10 +74,13 @@ export const getDashboardStats = async (req: Request, res: Response) => {
           totalSubmissions,
           totalContests,
           premiumUsers,
+          totalColleges,
           revenue: revenue._sum.amount || 0,
         },
         submissionsByVerdict,
         recentSubmissions,
+        recentColleges,
+        recentUsers,
       },
     });
   } catch (error) {
@@ -315,5 +332,46 @@ export const getSystemHealth = async (req: Request, res: Response) => {
       message: 'System unhealthy',
       error: error instanceof Error ? error.message : 'Unknown error',
     });
+  }
+};
+
+export const getAllSubscriptions = async (req: Request, res: Response) => {
+  try {
+    const colleges = await prisma.college.findMany({
+      select: {
+        id: true,
+        name: true,
+        domain: true,
+        subscriptionPlan: true,
+        subscriptionEnd: true,
+        isActive: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.json({ success: true, data: colleges });
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateSubscription = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { subscriptionPlan, subscriptionEnd, isActive } = req.body;
+
+    const college = await prisma.college.update({
+      where: { id: id as string },
+      data: {
+        ...(subscriptionPlan && { subscriptionPlan }),
+        ...(subscriptionEnd !== undefined && { subscriptionEnd: subscriptionEnd ? new Date(subscriptionEnd) : null }),
+        ...(isActive !== undefined && { isActive }),
+      },
+    });
+
+    res.json({ success: true, data: college });
+  } catch (error) {
+    throw error;
   }
 };

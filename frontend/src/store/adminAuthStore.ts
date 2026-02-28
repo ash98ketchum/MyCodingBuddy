@@ -6,7 +6,9 @@ interface AdminAuthState {
     admin: User | null;
     token: string | null;
     isAuthenticated: boolean;
+    activeCollegeId: string | null;
     setAuth: (user: User, token: string) => void;
+    setActiveCollege: (collegeId: string | null) => void;
     logout: () => void;
 }
 
@@ -16,6 +18,7 @@ export const useAdminAuthStore = create<AdminAuthState>()(
             admin: null,
             token: null,
             isAuthenticated: false,
+            activeCollegeId: null,
             setAuth: (user, token) => {
                 // Validate it's actually an admin
                 if (user.role === 'ADMIN') {
@@ -24,8 +27,11 @@ export const useAdminAuthStore = create<AdminAuthState>()(
                     console.error("Attempted to set non-admin user in adminAuthStore");
                 }
             },
+            setActiveCollege: (collegeId) => {
+                set({ activeCollegeId: collegeId });
+            },
             logout: () => {
-                set({ admin: null, token: null, isAuthenticated: false });
+                set({ admin: null, token: null, isAuthenticated: false, activeCollegeId: null });
             },
         }),
         {

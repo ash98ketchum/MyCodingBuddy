@@ -27,6 +27,13 @@ class AdminAuthApiService {
                         if (parsed.state?.token) {
                             config.headers.Authorization = `Bearer ${parsed.state.token}`;
                         }
+                        // Automatically inject activeCollegeId if it exists
+                        if (parsed.state?.activeCollegeId) {
+                            config.params = { ...config.params, collegeId: parsed.state.activeCollegeId };
+                            if (config.data && typeof config.data === 'object' && !(config.data instanceof FormData)) {
+                                config.data.collegeId = parsed.state.activeCollegeId;
+                            }
+                        }
                     } catch (e) {
                         console.error("Failed to parse admin storage", e);
                     }

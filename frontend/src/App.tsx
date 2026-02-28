@@ -29,6 +29,9 @@ import AssignProblemPage from './pages/admin/program/AssignProblemPage';
 import EODReportPage from './pages/admin/reports/EODReportPage';
 import CollegeDashboardPage from './pages/admin/college/CollegeDashboardPage';
 
+import AdminSubscriptionsPage from './pages/admin/AdminSubscriptionsPage';
+import EmailAutomationPage from './pages/admin/college/EmailAutomationPage';
+
 // Legal Pages
 import TermsPage from './pages/Legal/TermsPage';
 import PrivacyPage from './pages/Legal/PrivacyPage';
@@ -212,6 +215,8 @@ function App() {
               <Route path="program/assign" element={<AssignProblemPage />} />
               <Route path="reports/eod" element={<EODReportPage />} />
               <Route path="college/:collegeId" element={<CollegeDashboardPage />} />
+              <Route path="subscriptions" element={<AdminSubscriptionsPage />} />
+              <Route path="email" element={<EmailAutomationPage />} />
               <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
             </Route>
           </Routes>

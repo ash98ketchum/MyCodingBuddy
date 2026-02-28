@@ -121,6 +121,7 @@ export interface DashboardStats {
   totalSubmissions: number;
   totalContests: number;
   premiumUsers: number;
+  totalColleges: number;
   revenue: number;
 }
 

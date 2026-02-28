@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Plus, School, Calendar, Users, Briefcase } from 'lucide-react';
 import { api } from '@/services/api';
+import { useAdminAuthStore } from '@/store/adminAuthStore';
 
 interface Program {
     id: string;
@@ -20,6 +21,7 @@ interface Program {
 
 const CollegeDashboard = () => {
     const navigate = useNavigate();
+    const { setActiveCollege } = useAdminAuthStore();
     const [programs, setPrograms] = useState<Program[]>([]);
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -149,10 +151,21 @@ const CollegeDashboard = () => {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="pt-4 border-t border-gray-100">
+                                    <div className="pt-4 mt-4 border-t border-gray-100 flex items-center justify-between">
                                         <div className="text-xs font-medium text-accent">
                                             {program._count?.assignments || 0} Total Assignments Dispatched
                                         </div>
+                                        <Button
+                                            size="sm"
+                                            className="bg-gray-100 text-gray-700 hover:bg-gray-200 text-xs py-1 h-auto"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setActiveCollege(program.id);
+                                                navigate(`/admin/college/${program.id}`);
+                                            }}
+                                        >
+                                            Manage College
+                                        </Button>
                                     </div>
                                 </Card>
                             </motion.div>

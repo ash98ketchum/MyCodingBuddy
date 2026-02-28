@@ -8,6 +8,8 @@ import {
   getAllSubmissions,
   createAdminUser,
   getSystemHealth,
+  getAllSubscriptions,
+  updateSubscription,
 } from '@/controllers/admin.controller';
 import { authenticate, requireAdmin } from '@/middleware/auth';
 
@@ -24,5 +26,7 @@ router.delete('/users/:id', deleteUser);
 router.get('/submissions', getAllSubmissions);
 router.post('/create-admin', createAdminUser);
 router.get('/health', getSystemHealth);
+router.get('/subscriptions', getAllSubscriptions);
+router.put('/subscriptions/:id', updateSubscription);
 
 export default router;

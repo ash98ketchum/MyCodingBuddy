@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Plus, X, Loader2, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
 import api from '../../../services/api';
+import toast from 'react-hot-toast';
 
 interface Invitation {
     id: string;
@@ -50,11 +51,19 @@ export const CollegeInvitationsList: React.FC<{ collegeId: string }> = ({ colleg
                 emails: rawEmails
             });
 
-            setInviteResult(res.data?.data);
+            const result = res.data?.data;
+            setInviteResult(result);
             setEmailsInput('');
             fetchInvitations();
+
+            // Add toast notification for immediate feedback
+            if (result?.invited > 0) {
+                toast.success(`Successfully sent ${result.invited} invitation(s)`);
+            } else if (result?.alreadyEnrolled > 0) {
+                toast.error(`${result.alreadyEnrolled} user(s) already enrolled or invited`);
+            }
         } catch (error: any) {
-            alert(error.response?.data?.message || 'Failed to send invitations');
+            toast.error(error.response?.data?.message || 'Failed to send invitations');
         } finally {
             setIsInviting(false);
         }
@@ -85,7 +94,7 @@ export const CollegeInvitationsList: React.FC<{ collegeId: string }> = ({ colleg
 
     return (
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 mt-6 lg:col-span-2">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
                 <div>
                     <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                         <Mail className="w-5 h-5 text-accent" />
@@ -93,13 +102,34 @@ export const CollegeInvitationsList: React.FC<{ collegeId: string }> = ({ colleg
                     </h2>
                     <p className="text-sm text-gray-500 mt-1">Manage email enrollments and opt-outs.</p>
                 </div>
-                <button
-                    onClick={() => setShowInviteModal(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors text-sm font-medium shadow-sm shadow-gray-900/10"
-                >
-                    <Plus className="w-4 h-4" />
-                    Invite Students
-                </button>
+
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                    {/* Inline Quick Add */}
+                    <form onSubmit={handleInviteSubmit} className="flex flex-1 md:flex-initial items-center bg-gray-50 border border-gray-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-accent/20 focus-within:border-accent transition-all">
+                        <input
+                            type="text"
+                            placeholder="Type student email..."
+                            value={emailsInput}
+                            onChange={(e) => setEmailsInput(e.target.value)}
+                            className="bg-transparent px-4 py-2 text-sm outline-none w-full md:w-64"
+                        />
+                        <button
+                            type="submit"
+                            disabled={isInviting || !emailsInput.trim()}
+                            className="bg-accent text-white px-4 py-2 text-sm font-medium hover:bg-accent-600 transition-colors disabled:opacity-50 flex items-center gap-2"
+                        >
+                            {isInviting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send'}
+                        </button>
+                    </form>
+
+                    <button
+                        onClick={() => setShowInviteModal(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors text-sm font-medium shadow-sm flex-shrink-0"
+                    >
+                        <Plus className="w-4 h-4" />
+                        Bulk
+                    </button>
+                </div>
             </div>
 
             {/* Invitations Table */}

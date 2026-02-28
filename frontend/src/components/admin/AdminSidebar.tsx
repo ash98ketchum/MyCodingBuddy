@@ -1,18 +1,27 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, FileSpreadsheet, FilePlus, Mail, School } from 'lucide-react';
+import { LayoutDashboard, Users, FileSpreadsheet, FilePlus, Mail, School, CreditCard, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
-
-const NAV_ITEMS = [
-    { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
-    { name: 'Students & Programs', path: '/admin/programs', icon: Users },
-    { name: 'College Analytics', path: '/admin/college/COLLEGE_2026', icon: School },
-    { name: 'Assign Problems', path: '/admin/program/assign', icon: FilePlus },
-    { name: 'Email Automation', path: '/admin/email', icon: Mail },
-    { name: 'EOD Reports', path: '/admin/reports/eod', icon: FileSpreadsheet },
-];
+import { useAdminAuthStore } from '../../store/adminAuthStore';
 
 export const AdminSidebar: React.FC = () => {
+    const { activeCollegeId, setActiveCollege } = useAdminAuthStore();
+
+    const SUPER_ADMIN_NAV = [
+        { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+        { name: 'Colleges & Programs', path: '/admin/programs', icon: Users },
+        { name: 'Subscriptions', path: '/admin/subscriptions', icon: CreditCard },
+    ];
+
+    const COLLEGE_ADMIN_NAV = [
+        { name: 'College Analytics', path: `/admin/college/${activeCollegeId}`, icon: School },
+        { name: 'Assign Problems', path: '/admin/program/assign', icon: FilePlus },
+        { name: 'Email Automation', path: '/admin/email', icon: Mail },
+        { name: 'EOD Reports', path: '/admin/reports/eod', icon: FileSpreadsheet },
+    ];
+
+    const NAV_ITEMS = activeCollegeId ? COLLEGE_ADMIN_NAV : SUPER_ADMIN_NAV;
+
     return (
         <motion.aside
             initial={{ x: -20, opacity: 0 }}
@@ -21,9 +30,20 @@ export const AdminSidebar: React.FC = () => {
         >
             <div className="p-6">
                 <h2 className="text-xl font-bold bg-gradient-to-r from-accent to-accent-600 bg-clip-text text-transparent">
-                    Admin Portal
+                    {activeCollegeId ? 'College System' : 'Admin Portal'}
                 </h2>
                 <p className="text-sm text-gray-500 mt-1">v2.0 System</p>
+
+                {/* Back to Global Admin Button */}
+                {activeCollegeId && (
+                    <button
+                        onClick={() => setActiveCollege(null)}
+                        className="mt-4 flex items-center gap-2 text-sm text-accent hover:text-accent-600 transition-colors bg-accent/10 py-1.5 px-3 rounded-lg w-full justify-center border border-accent/20"
+                    >
+                        <ArrowLeft size={16} />
+                        Exit College Mode
+                    </button>
+                )}
             </div>
 
             <nav className="flex-1 px-4 space-y-2">
