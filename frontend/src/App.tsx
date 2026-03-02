@@ -43,6 +43,7 @@ import HelpPage from './pages/Support/HelpPage';
 import ContactPage from './pages/Support/ContactPage';
 import ReportPage from './pages/Support/ReportPage';
 import FeatureRequestPage from './pages/Support/FeatureRequestPage';
+import SupportUsPage from './pages/Support/SupportUsPage';
 
 // Resources Pages
 import DocsPage from './pages/Resources/DocsPage';
@@ -192,6 +193,7 @@ function App() {
             <Route path="/contact" element={<><Navbar /><ContactPage /><Footer /></>} />
             <Route path="/report" element={<><Navbar /><ReportPage /><Footer /></>} />
             <Route path="/feature-request" element={<><Navbar /><FeatureRequestPage /><Footer /></>} />
+            <Route path="/support-us" element={<><Navbar /><SupportUsPage /><Footer /></>} />
 
             {/* Resources */}
             <Route path="/docs" element={<><Navbar /><DocsPage /><Footer /></>} />

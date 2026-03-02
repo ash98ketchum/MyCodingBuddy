@@ -19,11 +19,11 @@ export const CollegeInvitationsList: React.FC<{ collegeId: string }> = ({ colleg
     const [emailsInput, setEmailsInput] = useState('');
     const [isInviting, setIsInviting] = useState(false);
     const [inviteResult, setInviteResult] = useState<{ invited: number; alreadyEnrolled: number; errors: string[] } | null>(null);
-
     const fetchInvitations = async () => {
         try {
             const res = await api.get(`/admin/college/${collegeId}/invitations`);
-            setInvitations(res.data?.data || []);
+            // res is already the response data due to the axios interceptor
+            setInvitations((res as any).data || []);
         } catch (error) {
             console.error('Failed to fetch invitations', error);
         } finally {
@@ -51,7 +51,8 @@ export const CollegeInvitationsList: React.FC<{ collegeId: string }> = ({ colleg
                 emails: rawEmails
             });
 
-            const result = res.data?.data;
+            // Post result is also { success: true, data: { invited, ... } }
+            const result = (res as any).data;
             setInviteResult(result);
             setEmailsInput('');
             fetchInvitations();

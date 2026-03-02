@@ -12,15 +12,18 @@ export const collegeInvitationService = {
      */
     async inviteStudents(collegeId: string, emails: string[]) {
         // 1. Validate College exists (create mock if it doesn't to support frontend "Program Groups")
+        const normalizedCollegeId = collegeId.toUpperCase().trim();
         const college = await prisma.college.upsert({
-            where: { id: collegeId },
+            where: { id: normalizedCollegeId },
             update: {},
             create: {
-                id: collegeId,
-                name: collegeId.replace(/_/g, ' '),
+                id: normalizedCollegeId,
+                name: normalizedCollegeId.replace(/_/g, ' '),
                 isActive: true
             }
         });
+
+        console.log(`[InviteService] Processing invitation for college: ${normalizedCollegeId}`);
 
         // Filter duplicates and normalize
         const uniqueEmails = [...new Set(emails.map(e => e.toLowerCase().trim()))];
@@ -34,7 +37,7 @@ export const collegeInvitationService = {
         // 2. Query existing mappings in CollegeStudent
         const existingStudents = await prisma.collegeStudent.findMany({
             where: {
-                collegeId,
+                collegeId: normalizedCollegeId,
                 email: { in: uniqueEmails },
             },
             select: { email: true }
@@ -51,9 +54,10 @@ export const collegeInvitationService = {
 
                 // Check for existing pending invitation
                 const existingInvite = await prisma.collegeInvitation.findFirst({
-                    where: { collegeId, email, status: 'PENDING' }
+                    where: { collegeId: normalizedCollegeId, email, status: 'PENDING' }
                 });
 
+                console.log(`[InviteService] Processing student: ${email}. Existing Invite: ${!!existingInvite}`);
                 let token = existingInvite?.token;
 
                 if (!existingInvite) {
@@ -62,15 +66,17 @@ export const collegeInvitationService = {
                     const expiresAt = new Date();
                     expiresAt.setDate(expiresAt.getDate() + 7);
 
+                    console.log(`[InviteService] Creating new invitation for ${email}`);
                     await prisma.collegeInvitation.create({
                         data: {
-                            collegeId,
+                            collegeId: normalizedCollegeId,
                             email,
                             token,
                             expiresAt,
                         }
                     });
                 } else if (existingInvite.expiresAt < new Date()) {
+                    console.log(`[InviteService] Refreshing expired invitation for ${email}`);
                     // Refresh expiration if it expired but they requested a re-invite
                     const expiresAt = new Date();
                     expiresAt.setDate(expiresAt.getDate() + 7);
@@ -91,23 +97,24 @@ export const collegeInvitationService = {
                 // ==========================================
 
                 // 1. Create/Update CollegeStudent so they appear immediately in Top Performers and College Dashboard
+                console.log(`[InviteService] Upserting CollegeStudent for ${email} in ${normalizedCollegeId}`);
                 await prisma.collegeStudent.upsert({
                     where: { email },
-                    update: { collegeId },
+                    update: { collegeId: normalizedCollegeId },
                     create: {
-                        collegeId,
+                        collegeId: normalizedCollegeId,
                         email,
                         name
                     }
                 });
 
                 // 2. Create/Update ProgramStudent so they appear in Assignment lists and can receive automated problem emails
-                // Note: The UI maps collegeId to programId for assignment screens
+                console.log(`[InviteService] Upserting ProgramStudent for ${email} in ${normalizedCollegeId}`);
                 await prisma.programStudent.upsert({
                     where: { email },
-                    update: { programId: collegeId },
+                    update: { programId: normalizedCollegeId },
                     create: {
-                        programId: collegeId,
+                        programId: normalizedCollegeId,
                         email,
                         name
                     }
@@ -159,8 +166,9 @@ export const collegeInvitationService = {
      * Get all invitations for a given college
      */
     async getInvitations(collegeId: string) {
+        const normalizedCollegeId = collegeId.toUpperCase().trim();
         return prisma.collegeInvitation.findMany({
-            where: { collegeId },
+            where: { collegeId: normalizedCollegeId },
             orderBy: { createdAt: 'desc' }
         });
     },

@@ -31,6 +31,7 @@ const Navbar = () => {
     { path: '/problems', label: 'Problems' },
     { path: '/discuss', label: 'Discuss' },
     { path: '/leaderboard', label: 'Leaderboard' },
+    { path: '/support-us', label: 'Support Us' },
   ];
 
   return (

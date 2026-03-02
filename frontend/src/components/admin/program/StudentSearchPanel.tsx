@@ -75,14 +75,11 @@ const StudentSearchPanel: React.FC = () => {
         // 1. Instant Bloom Check
         const probablyExists = checkBloomFilter(email);
 
-        if (!probablyExists) {
-            // Definitively not found - Instant UI feedback
-            setIndicatorState('not_found');
-            setSelectedStudent(null);
-            return;
-        }
+        // 2. Exact Verification
+        // We use a shorter debounce (400ms) if the Bloom filter says it likely exists.
+        // we use a longer debounce (1000ms) if it says it doesn't, assuming the filter might be stale.
+        const debounceTime = probablyExists ? 400 : 1000;
 
-        // 2. Debounced Exact Verification for True Positives
         setIndicatorState('checking');
         const timeoutId = setTimeout(async () => {
             const student = await verifyStudentExact(email);
@@ -90,11 +87,10 @@ const StudentSearchPanel: React.FC = () => {
                 setIndicatorState('exists');
                 setSelectedStudent(student);
             } else {
-                // Bloom filter false positive (rare)
                 setIndicatorState('not_found');
                 setSelectedStudent(null);
             }
-        }, 400); // 400ms debounce for network
+        }, debounceTime);
 
         return () => clearTimeout(timeoutId);
     }, [emailInput, checkBloomFilter, verifyStudentExact, setSelectedStudent]);
