@@ -16,3 +16,10 @@ frontend/dist
 frontend/build
 
 secret.txt
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
