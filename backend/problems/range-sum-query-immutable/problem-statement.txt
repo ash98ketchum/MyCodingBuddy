@@ -1,0 +1,13 @@
+Given an integer array nums, handle multiple queries of the following type:
+
+Calculate the sum of the elements of nums between indices left and right inclusive where left <= right.
+
+Implement the NumArray class (or functions behaving equivalently):
+NumArray(int[] nums) Initializes the object with the integer array nums.
+int sumRange(int left, int right) Returns the sum of the elements of nums between indices left and right inclusive (i.e. nums[left] + nums[left + 1] + ... + nums[right]).
+
+Input Format Customization for testing:
+The first line contains the array `nums`.
+The second line contains an integer `q`, the number of queries.
+The next `q` lines each contain two integers `left` and `right`.
+Return the answers to each query, one per line.

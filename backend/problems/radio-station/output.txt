@@ -1,0 +1,40 @@
+block 192.168.0.1; #replica
+proxy 192.168.0.2; #main
+[[[CASE_SEPARATOR]]]
+redirect 138.197.64.57; #server
+block 8.8.8.8; #google
+cf 212.193.33.27; #codeforces
+unblock 8.8.8.8; #google
+check 138.197.64.57; #server
+[[[CASE_SEPARATOR]]]
+cmd 1.1.1.1; #only
+cmd 1.1.1.1; #only
+cmd 1.1.1.1; #only
+[[[CASE_SEPARATOR]]]
+get 10.0.0.1; #db
+set 10.0.0.2; #db
+del 10.0.0.1; #db
+get 10.0.0.2; #db
+[[[CASE_SEPARATOR]]]
+run 3.4.5.6; #c
+[[[CASE_SEPARATOR]]]
+cmd 0.0.0.0; #y
+cmd 255.255.255.255; #x
+[[[CASE_SEPARATOR]]]
+login 192.168.1.4; #auth
+query 192.168.1.2; #sql
+get 192.168.1.3; #cache
+view 192.168.1.1; #web
+[[[CASE_SEPARATOR]]]
+do 1.2.3.4; #abc
+undo 4.3.2.1; #xyz
+[[[CASE_SEPARATOR]]]
+ping 127.0.0.1; #master
+ping 127.0.0.2; #slave
+pong 127.0.0.1; #master
+[[[CASE_SEPARATOR]]]
+up 1.1.1.1; #n
+down 4.4.4.4; #s
+left 3.3.3.3; #w
+right 2.2.2.2; #e
+center 5.5.5.5; #c

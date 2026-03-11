@@ -1,0 +1,4 @@
+1 <= t <= 20000
+1 <= |s| <= 200000
+The sum of lengths of all strings in all test cases does not exceed 200000.
+Each character of s is either 1, 2, or 3.
