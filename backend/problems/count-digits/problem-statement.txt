@@ -1,0 +1,1 @@
+Given a natural number n. You have to find the number of digits in it and return it.

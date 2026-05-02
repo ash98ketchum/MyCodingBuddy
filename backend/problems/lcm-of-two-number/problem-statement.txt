@@ -1,0 +1,1 @@
+Given two positive integers a and b. Find the Least Common Multiple (LCM) of a and b.

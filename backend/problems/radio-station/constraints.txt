@@ -1,0 +1,5 @@
+1 <= n, m <= 1000
+1 <= |name| <= 10, name only consists of English lowercase letters.
+1 <= |command| <= 10, command only consists of English lowercase letters.
+It is guaranteed that all ip are distinct.
+It is guaranteed that the command ip belongs to one of the n school servers.

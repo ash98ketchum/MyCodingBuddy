@@ -1,0 +1,79 @@
+2 2
+main 192.168.0.2
+replica 192.168.0.1
+block 192.168.0.1;
+proxy 192.168.0.2;
+[[[CASE_SEPARATOR]]]
+3 5
+google 8.8.8.8
+codeforces 212.193.33.27
+server 138.197.64.57
+redirect 138.197.64.57;
+block 8.8.8.8;
+cf 212.193.33.27;
+unblock 8.8.8.8;
+check 138.197.64.57;
+[[[CASE_SEPARATOR]]]
+1 3
+only 1.1.1.1
+cmd 1.1.1.1;
+cmd 1.1.1.1;
+cmd 1.1.1.1;
+[[[CASE_SEPARATOR]]]
+2 4
+db 10.0.0.1
+db 10.0.0.2
+get 10.0.0.1;
+set 10.0.0.2;
+del 10.0.0.1;
+get 10.0.0.2;
+[[[CASE_SEPARATOR]]]
+5 1
+a 1.2.3.4
+b 2.3.4.5
+c 3.4.5.6
+d 4.5.6.7
+e 5.6.7.8
+run 3.4.5.6;
+[[[CASE_SEPARATOR]]]
+2 2
+x 255.255.255.255
+y 0.0.0.0
+cmd 0.0.0.0;
+cmd 255.255.255.255;
+[[[CASE_SEPARATOR]]]
+4 4
+web 192.168.1.1
+sql 192.168.1.2
+cache 192.168.1.3
+auth 192.168.1.4
+login 192.168.1.4;
+query 192.168.1.2;
+get 192.168.1.3;
+view 192.168.1.1;
+[[[CASE_SEPARATOR]]]
+3 2
+abc 1.2.3.4
+xyz 4.3.2.1
+pqr 2.3.4.5
+do 1.2.3.4;
+undo 4.3.2.1;
+[[[CASE_SEPARATOR]]]
+2 3
+master 127.0.0.1
+slave 127.0.0.2
+ping 127.0.0.1;
+ping 127.0.0.2;
+pong 127.0.0.1;
+[[[CASE_SEPARATOR]]]
+5 5
+n 1.1.1.1
+e 2.2.2.2
+w 3.3.3.3
+s 4.4.4.4
+c 5.5.5.5
+up 1.1.1.1;
+down 4.4.4.4;
+left 3.3.3.3;
+right 2.2.2.2;
+center 5.5.5.5;

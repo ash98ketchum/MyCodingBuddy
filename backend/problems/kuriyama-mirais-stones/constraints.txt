@@ -1,0 +1,6 @@
+1 <= n <= 10^5
+1 <= vi <= 10^9
+1 <= m <= 10^5
+1 <= l <= r <= n
+1 <= type <= 2
+Please note that the answers to the questions may overflow 32-bit integer type.
