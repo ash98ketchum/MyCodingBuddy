@@ -241,6 +241,16 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ onSubmit, onRun, isSubmi
         )}
       </AnimatePresence>
 
+      {/* Service Notice */}
+      <div className="flex-shrink-0 bg-amber-500/10 border-b border-amber-500/30 px-4 py-2.5 flex items-start gap-3">
+        <span className="text-amber-400 text-base flex-shrink-0 mt-0.5">⚠️</span>
+        <p className="text-xs text-amber-300/90 leading-relaxed">
+          <span className="font-semibold text-amber-400">Compiler unavailable in cloud deployment.</span>
+          {' '}We're sorry — running code requires a dedicated Amazon EC2 server for CPU-based compilation, which is currently beyond our hosting budget.
+          The compiler works perfectly in local deployment. This is a portfolio demonstration of the full-stack system.
+        </p>
+      </div>
+
       {/* Editor */}
       <div className="flex-1 overflow-hidden relative group">
         <Editor

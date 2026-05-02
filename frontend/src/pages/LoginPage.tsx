@@ -4,13 +4,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store';
 import api from '@/services/api';
 import toast from 'react-hot-toast';
-import { Code2, Mail, Lock, ArrowRight } from 'lucide-react';
+import { Code2, Mail, Lock, ArrowRight, UserCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button, Input } from '../components/ui';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { setAuth } = useAuthStore();
+  const { setAuth, loginAsGuest } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -56,6 +56,12 @@ export const LoginPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGuestLogin = () => {
+    loginAsGuest();
+    toast.success('Browsing as Guest 👋');
+    navigate('/');
   };
 
   return (
@@ -117,12 +123,7 @@ export const LoginPage: React.FC = () => {
             </a>
           </div>
 
-          <Button
-            type="submit"
-            size="lg"
-            className="w-full"
-            loading={loading}
-          >
+          <Button type="submit" size="lg" className="w-full" loading={loading}>
             {!loading && (
               <>
                 Sign In
@@ -130,6 +131,27 @@ export const LoginPage: React.FC = () => {
               </>
             )}
           </Button>
+
+          {/* Guest Login */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-text-tertiary">or</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            id="guest-login-btn"
+            onClick={handleGuestLogin}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-dashed border-accent/40 rounded-lg hover:border-accent hover:bg-accent/5 transition-all text-sm font-medium text-accent group"
+          >
+            <UserCheck size={18} className="group-hover:scale-110 transition-transform" />
+            Continue as Guest
+            <span className="text-[10px] font-normal text-text-tertiary ml-1">(Recruiter Preview)</span>
+          </button>
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
