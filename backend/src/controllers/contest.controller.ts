@@ -23,7 +23,7 @@ export const listContests = async (req: AuthRequest, res: Response, next: NextFu
 export const getContest = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const userId = req.user?.userId;
-        const contest = await contestService.getContestBySlug(req.params.slug, userId);
+        const contest = await contestService.getContestBySlug((req.params.slug as string), userId);
         if (!contest) return res.status(404).json({ success: false, message: 'Contest not found' });
         res.json({ success: true, data: contest });
     } catch (err) {
@@ -44,7 +44,7 @@ export const createContest = async (req: AuthRequest, res: Response, next: NextF
 // PUT /api/contests/:id (Admin)
 export const updateContest = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-        const contest = await contestService.updateContest(req.params.id, req.body);
+        const contest = await contestService.updateContest((req.params.id as string), req.body);
         res.json({ success: true, data: contest });
     } catch (err) {
         next(err);
@@ -54,7 +54,7 @@ export const updateContest = async (req: AuthRequest, res: Response, next: NextF
 // DELETE /api/contests/:id (Admin)
 export const deleteContest = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-        await contestService.deleteContest(req.params.id);
+        await contestService.deleteContest((req.params.id as string));
         res.json({ success: true, message: 'Contest deleted' });
     } catch (err) {
         next(err);
@@ -65,7 +65,7 @@ export const deleteContest = async (req: AuthRequest, res: Response, next: NextF
 export const registerForContest = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const userId = req.user!.userId;
-        const participant = await contestService.registerForContest(req.params.id, userId);
+        const participant = await contestService.registerForContest((req.params.id as string), userId);
         res.status(201).json({ success: true, data: participant });
     } catch (err: any) {
         if (err.message === 'Already registered') {
@@ -79,7 +79,7 @@ export const registerForContest = async (req: AuthRequest, res: Response, next: 
 export const unregisterFromContest = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const userId = req.user!.userId;
-        await contestService.unregisterFromContest(req.params.id, userId);
+        await contestService.unregisterFromContest((req.params.id as string), userId);
         res.json({ success: true, message: 'Unregistered from contest' });
     } catch (err: any) {
         if (err.message === 'Cannot unregister from an active contest') {
@@ -92,7 +92,7 @@ export const unregisterFromContest = async (req: AuthRequest, res: Response, nex
 // GET /api/contests/:id/leaderboard
 export const getLeaderboard = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-        const leaderboard = await contestService.getContestLeaderboard(req.params.id);
+        const leaderboard = await contestService.getContestLeaderboard((req.params.id as string));
         res.json({ success: true, data: leaderboard });
     } catch (err) {
         next(err);
@@ -103,7 +103,7 @@ export const getLeaderboard = async (req: AuthRequest, res: Response, next: Next
 export const getMyStatus = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const userId = req.user!.userId;
-        const status = await contestService.getUserContestStatus(req.params.id, userId);
+        const status = await contestService.getUserContestStatus((req.params.id as string), userId);
         res.json({ success: true, data: status });
     } catch (err) {
         next(err);
@@ -117,7 +117,7 @@ export const sendAnnouncement = async (req: AuthRequest, res: Response, next: Ne
     try {
         const { title, message } = req.body;
         if (!title || !message) return res.status(400).json({ success: false, message: 'Title and message are required' });
-        const announcement = await contestService.sendAnnouncement(req.params.id, title, message);
+        const announcement = await contestService.sendAnnouncement((req.params.id as string), title, message);
         res.status(201).json({ success: true, data: announcement });
     } catch (err) {
         next(err);
@@ -127,7 +127,7 @@ export const sendAnnouncement = async (req: AuthRequest, res: Response, next: Ne
 // GET /api/contests/:id/announcements
 export const getAnnouncements = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-        const announcements = await contestService.getAnnouncements(req.params.id);
+        const announcements = await contestService.getAnnouncements((req.params.id as string));
         res.json({ success: true, data: announcements });
     } catch (err) {
         next(err);
@@ -137,7 +137,7 @@ export const getAnnouncements = async (req: AuthRequest, res: Response, next: Ne
 // GET /api/contests/:id/participants
 export const getContestParticipants = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-        const participants = await contestService.getContestParticipants(req.params.id);
+        const participants = await contestService.getContestParticipants((req.params.id as string));
         res.json({ success: true, data: participants });
     } catch (err) {
         next(err);
@@ -148,7 +148,7 @@ export const getContestParticipants = async (req: AuthRequest, res: Response, ne
 export const banParticipant = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const { reason } = req.body;
-        const result = await contestService.banParticipant(req.params.id, req.params.userId, reason);
+        const result = await contestService.banParticipant((req.params.id as string), (req.params.userId as string), reason);
         res.json({ success: true, data: result, message: 'Participant banned' });
     } catch (err: any) {
         if (err.message === 'Participant not found') return res.status(404).json({ success: false, message: err.message });
@@ -159,7 +159,7 @@ export const banParticipant = async (req: AuthRequest, res: Response, next: Next
 // DELETE /api/contests/:id/participants/:userId/ban
 export const unbanParticipant = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-        const result = await contestService.unbanParticipant(req.params.id, req.params.userId);
+        const result = await contestService.unbanParticipant((req.params.id as string), (req.params.userId as string));
         res.json({ success: true, data: result, message: 'Participant unbanned' });
     } catch (err: any) {
         if (err.message === 'Participant not found') return res.status(404).json({ success: false, message: err.message });
@@ -170,7 +170,7 @@ export const unbanParticipant = async (req: AuthRequest, res: Response, next: Ne
 // GET /api/contests/:id/participants/:userId/solutions
 export const getParticipantSolutions = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-        const result = await contestService.getParticipantSolutions(req.params.id, req.params.userId);
+        const result = await contestService.getParticipantSolutions((req.params.id as string), (req.params.userId as string));
         res.json({ success: true, data: result });
     } catch (err: any) {
         if (err.message === 'Participant not found') return res.status(404).json({ success: false, message: err.message });
