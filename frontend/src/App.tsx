@@ -21,6 +21,12 @@ import DiscussionDetailPage from './pages/DiscussionDetailPage';
 import AboutPage from './pages/AboutPage';
 import OptOutPage from './pages/OptOutPage';
 
+// Contest Pages
+import ContestsPage from './pages/Contests/ContestsPage';
+import ContestDetailPage from './pages/Contests/ContestDetailPage';
+import ContestProblemPage from './pages/Contests/ContestProblemPage';
+import ContestLeaderboardPage from './pages/Contests/ContestLeaderboardPage';
+
 // Admin Auth
 import AdminLoginPage from './pages/admin/AdminLoginPage';
 import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
@@ -31,6 +37,7 @@ import CollegeDashboardPage from './pages/admin/college/CollegeDashboardPage';
 
 import AdminSubscriptionsPage from './pages/admin/AdminSubscriptionsPage';
 import EmailAutomationPage from './pages/admin/college/EmailAutomationPage';
+import AdminContestPage from './pages/admin/AdminContestPage';
 
 // Legal Pages
 import TermsPage from './pages/Legal/TermsPage';
@@ -170,6 +177,47 @@ function App() {
               }
             />
 
+            {/* Contest Routes */}
+            <Route
+              path="/contests"
+              element={
+                <>
+                  <Navbar />
+                  <ContestsPage />
+                  <Footer />
+                </>
+              }
+            />
+            <Route
+              path="/contests/:slug"
+              element={
+                <>
+                  <Navbar />
+                  <ContestDetailPage />
+                  <Footer />
+                </>
+              }
+            />
+            <Route
+              path="/contests/:slug/problem/:order"
+              element={
+                <PrivateRoute>
+                  <Navbar />
+                  <ContestProblemPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/contests/:slug/leaderboard"
+              element={
+                <>
+                  <Navbar />
+                  <ContestLeaderboardPage />
+                  <Footer />
+                </>
+              }
+            />
+
             {/* Footer Pages */}
             <Route
               path="/about"
@@ -218,6 +266,7 @@ function App() {
               <Route path="reports/eod" element={<EODReportPage />} />
               <Route path="college/:collegeId" element={<CollegeDashboardPage />} />
               <Route path="subscriptions" element={<AdminSubscriptionsPage />} />
+              <Route path="contests" element={<AdminContestPage />} />
               <Route path="email" element={<EmailAutomationPage />} />
               <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
             </Route>

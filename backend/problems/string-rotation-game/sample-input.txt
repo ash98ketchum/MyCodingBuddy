@@ -1,9 +1,0 @@
-4
-4
-abcd
-4
-abbc
-4
-abba
-6
-abbccc

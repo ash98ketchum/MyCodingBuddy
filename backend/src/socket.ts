@@ -27,6 +27,19 @@ export const initSocket = (server: HttpServer, corsOptions: any) => {
             console.log(`📡 Socket ${socket.id} joined room ${room}`);
         });
 
+        // Contest rooms for live leaderboard updates
+        socket.on('join_contest', (contestId: string) => {
+            const room = `contest_${contestId}`;
+            socket.join(room);
+            console.log(`🏆 Socket ${socket.id} joined contest room ${room}`);
+        });
+
+        socket.on('leave_contest', (contestId: string) => {
+            const room = `contest_${contestId}`;
+            socket.leave(room);
+            console.log(`🏆 Socket ${socket.id} left contest room ${room}`);
+        });
+
         socket.on('disconnect', () => {
             console.log(`🔌 Client disconnected from socket: ${socket.id}`);
         });

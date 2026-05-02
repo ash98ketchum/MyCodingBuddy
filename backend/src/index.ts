@@ -19,6 +19,7 @@ import submissionRoutes from './routes/submission.routes';
 import adminRoutes from './routes/admin.routes';
 import adminProgramAssignRoutes from './routes/admin-program.routes';
 import discussionRoutes from './routes/discussion.routes';
+import contestRoutes from './routes/contest.routes';
 import eodReportsRoutes from './modules/eodReports/eodReports.routes';
 import collegeDashboardRoutes from './modules/collegeDashboard/collegeDashboard.routes';
 import { initEODScheduler } from './modules/eodReports/scheduler';
@@ -61,6 +62,7 @@ app.use('/api/admin/program', defaultLimiter, adminProgramAssignRoutes);
 app.use('/api/admin/reports/eod', defaultLimiter, eodReportsRoutes);
 app.use('/api/admin/college', collegeRateLimiter, collegeDashboardRoutes);
 app.use('/api', publicLimiter, discussionRoutes);
+app.use('/api/contests', publicLimiter, contestRoutes);
 
 // Initialize EOD Scheduler
 initEODScheduler();

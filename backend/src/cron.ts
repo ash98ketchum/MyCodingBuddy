@@ -1,6 +1,7 @@
 // backend/src/cron.ts
 import cron from 'node-cron';
 import prisma from './config/database';
+import { initContestScheduler } from './services/contest.scheduler';
 
 export const initCronJobs = () => {
     console.log('⏰ Initializing production cron jobs...');
@@ -15,4 +16,7 @@ export const initCronJobs = () => {
             console.error('❌ Failed to refresh materialized view:', error);
         }
     });
+
+    // Initialize contest scheduler (weekly creation + status transitions)
+    initContestScheduler();
 };

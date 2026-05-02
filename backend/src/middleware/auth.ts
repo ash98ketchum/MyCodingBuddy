@@ -112,3 +112,21 @@ export const requireCollegeAdmin = async (
     });
   }
 };
+
+export const optionalAuth = async (
+  req: AuthRequest,
+  _res: Response,
+  next: NextFunction
+) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      const decoded = verifyToken(token);
+      req.user = decoded;
+    }
+  } catch (_) {
+    // Ignore — user is simply not authenticated
+  }
+  next();
+};

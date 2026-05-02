@@ -1,19 +1,16 @@
-abcabcbb
-[[[CASE_SEPARATOR]]]
 bbbbb
 [[[CASE_SEPARATOR]]]
 pwwkew
 [[[CASE_SEPARATOR]]]
 
 [[[CASE_SEPARATOR]]]
- 
+a
 [[[CASE_SEPARATOR]]]
-au
+abcdefghijklmnopqrstuvwxyz
 [[[CASE_SEPARATOR]]]
 dvdf
 [[[CASE_SEPARATOR]]]
-abba
+anviaj
 [[[CASE_SEPARATOR]]]
-aab
+tmmzuxt
 [[[CASE_SEPARATOR]]]
-abcdefghijklmnopqrstuvwxyz

@@ -130,17 +130,23 @@ model Contest {
   startTime    DateTime
   endTime      DateTime
   duration     Int
+  contestType  ContestType          @default(CUSTOM)
+  status       ContestStatus        @default(UPCOMING)
+  bannerImage  String?
   isPublic     Boolean              @default(true)
   isPremium    Boolean              @default(false)
   ratingChange Boolean              @default(true)
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
-  participants ContestParticipant[]
-  problems     ContestProblem[]
-  submissions  Submission[]
+  participants    ContestParticipant[]
+  problems        ContestProblem[]
+  submissions     Submission[]
+  announcements   ContestAnnouncement[]
 
   @@index([startTime])
   @@index([slug])
+  @@index([status])
+  @@index([contestType])
 }
 
 model ContestProblem {
@@ -157,20 +163,34 @@ model ContestProblem {
 }
 
 model ContestParticipant {
-  id             String   @id @default(cuid())
+  id             String    @id @default(cuid())
   contestId      String
   userId         String
-  score          Int      @default(0)
-  penalty        Int      @default(0)
+  score          Int       @default(0)
+  penalty        Int       @default(0)
   rank           Int?
-  ratingChange   Int      @default(0)
-  problemsSolved Int      @default(0)
-  registeredAt   DateTime @default(now())
-  contest        Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ratingChange   Int       @default(0)
+  problemsSolved Int       @default(0)
+  isBanned       Boolean   @default(false)
+  bannedReason   String?
+  startedAt      DateTime?
+  registeredAt   DateTime  @default(now())
+  contest        Contest   @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([contestId, userId])
   @@index([contestId, score])
+}
+
+model ContestAnnouncement {
+  id        String   @id @default(cuid())
+  contestId String
+  title     String
+  message   String
+  createdAt DateTime @default(now())
+  contest   Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
+
+  @@index([contestId])
 }
 
 model Discussion {
@@ -298,6 +318,19 @@ enum Verdict {
   MEMORY_LIMIT_EXCEEDED
   RUNTIME_ERROR
   COMPILATION_ERROR
+}
+
+enum ContestType {
+  WEEKLY_START
+  WEEKLY_END
+  CUSTOM
+}
+
+enum ContestStatus {
+  UPCOMING
+  ACTIVE
+  ENDED
+  CANCELLED
 }
 
 // ==========================================

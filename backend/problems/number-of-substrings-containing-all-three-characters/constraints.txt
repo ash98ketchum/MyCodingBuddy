@@ -1,2 +1,0 @@
-3 <= s.length <= 5 * 10^4
-s only consists of a, b or c characters.
