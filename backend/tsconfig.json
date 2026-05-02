@@ -22,7 +22,8 @@
       ]
     },
     "declaration": false,
-    "sourceMap": true
+    "sourceMap": true,
+    "ignoreDeprecations": "5.0"
   },
   "include": [
     "src"
