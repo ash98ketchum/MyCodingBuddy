@@ -72,7 +72,7 @@ export const useEditorStore = create<EditorState>()(
     (set) => ({
       code: '',
       language: 'JAVASCRIPT',
-      theme: 'vs-dark',
+      theme: 'premium-dark',
       fontSize: 14,
       setCode: (code) => set({ code }),
       setLanguage: (language) => set({ language }),

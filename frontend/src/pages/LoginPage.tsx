@@ -18,6 +18,11 @@ export const LoginPage: React.FC = () => {
   });
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
+  const handleOAuth = (provider: 'google' | 'github') => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    window.location.href = `${apiUrl}/auth/${provider}`;
+  };
+
   const validateForm = () => {
     const newErrors: { email?: string; password?: string } = {};
 
@@ -165,6 +170,7 @@ export const LoginPage: React.FC = () => {
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
+              onClick={() => handleOAuth('google')}
               className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium flex items-center justify-center gap-2"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -177,6 +183,7 @@ export const LoginPage: React.FC = () => {
             </button>
             <button
               type="button"
+              onClick={() => handleOAuth('github')}
               className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium flex items-center justify-center gap-2"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">

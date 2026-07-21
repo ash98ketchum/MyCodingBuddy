@@ -11,7 +11,9 @@ model User {
   id               String               @id @default(cuid())
   username         String               @unique
   email            String               @unique
-  password         String
+  password         String?
+  googleId         String?              @unique
+  githubId         String?              @unique
   fullName         String?
   role             Role                 @default(USER)
   planType         PlanType             @default(FREE)
@@ -195,7 +197,7 @@ model ContestAnnouncement {
 
 model Discussion {
   id        String    @id @default(cuid())
-  problemId String
+  problemId String?
   userId    String
   title     String
   content   String
@@ -209,7 +211,7 @@ model Discussion {
   updatedAt DateTime  @updatedAt
   comments  Comment[]
   reactions Reaction[]
-  problem   Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  problem   Problem?  @relation(fields: [problemId], references: [id], onDelete: Cascade)
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   votes     Vote[]
 

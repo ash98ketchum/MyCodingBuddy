@@ -36,9 +36,40 @@ const updateProfileSchema = z.object({
   }),
 });
 
+import passport from 'passport';
+import { generateToken } from '@/utils/jwt';
+
+// Helper to handle OAuth success and send token to frontend
+const handleOAuthCallback = (req: any, res: any) => {
+  const token = generateToken({
+    userId: req.user.id,
+    email: req.user.email,
+    role: req.user.role,
+  });
+  
+  // Redirect to frontend with token
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  res.redirect(`${frontendUrl}/auth/callback?token=${token}`);
+};
+
 router.post('/register', validate(registerSchema), asyncHandler(register));
 router.post('/login', validate(loginSchema), asyncHandler(login));
 router.get('/profile', authenticate, asyncHandler(getProfile));
 router.put('/profile', authenticate, validate(updateProfileSchema), asyncHandler(updateProfile));
+
+// OAuth Routes
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get(
+  '/google/callback',
+  passport.authenticate('google', { session: false, failureRedirect: '/login' }),
+  handleOAuthCallback
+);
+
+router.get('/github', passport.authenticate('github', { scope: ['user:email'] }));
+router.get(
+  '/github/callback',
+  passport.authenticate('github', { session: false, failureRedirect: '/login' }),
+  handleOAuthCallback
+);
 
 export default router;

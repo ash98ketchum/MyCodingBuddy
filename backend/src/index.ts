@@ -41,6 +41,10 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
+// Passport initialization
+import passport from './config/passport';
+app.use(passport.initialize());
+
 // Logging
 if (config.isDevelopment) {
   app.use(morgan('dev'));

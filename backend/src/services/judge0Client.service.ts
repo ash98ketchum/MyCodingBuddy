@@ -154,6 +154,22 @@ class Judge0ClientService {
     // ── Synchronous single submission (wait=true) ─────────────────────────────
     /** Submit and block until Judge0 returns the result (no polling needed). */
     async submitWait(payload: { code: string; language: string; stdin: string; expectedOutput: string }): Promise<Judge0Result> {
+        if (process.env.USE_MOCK_COMPILER === 'true') {
+            await sleep(1000);
+            return {
+                token: Math.random().toString(36).substring(7),
+                stdout: payload.expectedOutput,
+                stderr: null,
+                compile_output: null,
+                message: null,
+                exit_code: 0,
+                exit_signal: null,
+                status: { id: JUDGE0_STATUS.ACCEPTED, description: 'Accepted' },
+                time: "0.015",
+                memory: 1024,
+            };
+        }
+
         const languageId = this.getLanguageId(payload.language);
         const body = buildPayload(payload.code, languageId, {
             input: payload.stdin,
@@ -212,6 +228,23 @@ class Judge0ClientService {
         testCases: TestCaseInput[]
     ): Promise<Judge0Result[]> {
         if (testCases.length === 0) return [];
+
+        if (process.env.USE_MOCK_COMPILER === 'true') {
+            console.log(`[Judge0] ⚠️ MOCK COMPILER ENABLED: Simulating success for ${testCases.length} test cases.`);
+            await sleep(1000); // Simulate network delay
+            return testCases.map(tc => ({
+                token: Math.random().toString(36).substring(7),
+                stdout: tc.expectedOutput, // Fake successful output
+                stderr: null,
+                compile_output: null,
+                message: null,
+                exit_code: 0,
+                exit_signal: null,
+                status: { id: JUDGE0_STATUS.ACCEPTED, description: 'Accepted' },
+                time: "0.015",
+                memory: 1024,
+            }));
+        }
 
         const languageId = this.getLanguageId(language);
         const submissions = testCases.map(tc => buildPayload(code, languageId, tc));

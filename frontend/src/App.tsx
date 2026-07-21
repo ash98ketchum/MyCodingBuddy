@@ -8,6 +8,7 @@ import { HelmetProvider } from 'react-helmet-async';
 // Pages
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import OAuthCallbackPage from './pages/OAuthCallbackPage';
 import HomePage from './pages/HomePage';
 import ProblemsPage from './pages/ProblemsPage';
 import ProblemPage from './pages/ProblemPage';
@@ -102,6 +103,7 @@ function App() {
             {/* Public Routes */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/auth/callback" element={<OAuthCallbackPage />} />
 
             {/* Admin Public Route */}
             <Route path="/admin/login" element={<AdminLoginPage />} />
